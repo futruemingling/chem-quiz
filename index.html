@@ -3,279 +3,675 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>生物化學刷題系統</title>
+  <title>生化補給站</title>
   <style>
     :root{
-      --bg:#f6f8fb;
-      --card:#ffffff;
-      --line:#d9e1ea;
-      --text:#1f2937;
+      --bg:#f7f8ff;
+      --bg-soft:#f2f5ff;
+      --card:rgba(255,255,255,.96);
+      --line:rgba(148,163,184,.15);
+      --text:#243042;
       --muted:#6b7280;
-      --primary:#2563eb;
-      --primary-soft:#dbeafe;
-      --ok:#15803d;
+      --primary:#6d5efc;
+      --primary-2:#4f7cff;
+      --primary-soft:#ece9ff;
+      --ok:#16a34a;
       --ok-soft:#dcfce7;
-      --bad:#b91c1c;
+      --bad:#ef4444;
       --bad-soft:#fee2e2;
-      --warn:#92400e;
-      --warn-soft:#fef3c7;
-      --shadow:0 10px 30px rgba(15,23,42,.08);
-      --radius:18px;
+      --warn:#f59e0b;
+      --warn-soft:#fff7ed;
+      --info:#14b8a6;
+      --info-soft:#ccfbf1;
+      --shadow:0 14px 36px rgba(91,108,181,.10);
+      --shadow-sm:0 6px 14px rgba(91,108,181,.07);
+      --radius-xl:22px;
+      --radius-lg:16px;
+      --radius-md:12px;
     }
+
     *{box-sizing:border-box}
+    html,body{height:100%}
+
     body{
       margin:0;
       font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
-      background:var(--bg);
       color:var(--text);
+      background:
+        radial-gradient(circle at top left, #e8edff 0%, transparent 30%),
+        radial-gradient(circle at top right, #f3e8ff 0%, transparent 24%),
+        linear-gradient(180deg, #f8f9ff, #f4f6ff);
     }
+
     .wrap{
-      max-width:1280px;
+      max-width:1320px;
       margin:0 auto;
-      padding:24px;
+      padding:14px;
     }
+
     .grid{
-      display:grid;
-      gap:18px;
-    }
-    .top{
-      grid-template-columns:repeat(3,1fr);
-    }
-    .main{
-      grid-template-columns:1.35fr .75fr;
-      align-items:start;
-    }
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-    }
-    .card .hd{
-      padding:18px 20px 10px;
-      border-bottom:1px solid #eef2f7;
-    }
-    .card .bd{
-      padding:18px 20px 20px;
-    }
-    h1,h2,h3,p{margin:0}
-    h1{font-size:24px}
-    h2{font-size:20px}
-    h3{font-size:16px}
-    .sub{
-      color:var(--muted);
-      margin-top:6px;
-      font-size:14px;
-      line-height:1.7;
-    }
-    .stats{
-      display:grid;
-      gap:12px;
-      margin-top:8px;
-    }
-    .row{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-    }
-    .value{
-      font-weight:700;
-    }
-    .toolbar{
       display:grid;
       gap:14px;
     }
-    .modes{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
+
+    .top-grid{
+      grid-template-columns:1.45fr .95fr;
+      align-items:start;
     }
-    .pill{
-      border:1px solid var(--line);
-      background:#fff;
-      padding:10px 14px;
-      border-radius:999px;
-      cursor:pointer;
-      font-size:14px;
-      transition:.2s;
+
+    .main-grid{
+      grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);
+      align-items:start;
     }
-    .pill.active{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-    }
-    .filters{
+
+    .side-stack{
       display:grid;
-      grid-template-columns:1fr 1fr 1.2fr 180px;
+      gap:14px;
+    }
+
+    .stats-grid{
+      display:grid;
       gap:12px;
     }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card .hd{
+      padding:12px 16px 8px;
+      border-bottom:1px solid rgba(226,232,240,.75);
+    }
+
+    .card .bd{
+      padding:14px 16px 16px;
+    }
+
+    .hero{
+      color:#fff;
+      background:linear-gradient(135deg, #6d5efc, #4f7cff);
+      position:relative;
+      overflow:hidden;
+      min-height:150px;
+    }
+
+    .hero::before,
+    .hero::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      background:rgba(255,255,255,.08);
+    }
+
+    .hero::before{
+      width:120px;
+      height:120px;
+      right:-20px;
+      bottom:-24px;
+    }
+
+    .hero::after{
+      width:78px;
+      height:78px;
+      left:-14px;
+      top:-14px;
+    }
+
+    .hero .bd{
+      position:relative;
+      z-index:1;
+      padding:16px 18px;
+    }
+
+    h1,h2,h3,p{margin:0}
+    h1{
+      font-size:24px;
+      line-height:1.15;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    h2{
+      font-size:17px;
+      font-weight:900;
+    }
+    h3{
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .sub{
+      margin-top:6px;
+      line-height:1.6;
+      font-size:12px;
+      color:rgba(255,255,255,.94);
+      max-width:640px;
+    }
+
+    .hero-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .hero-tag{
+      padding:5px 9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      font-size:11px;
+      font-weight:700;
+    }
+
+    .welcome-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .welcome-box{
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;
+      padding:8px 10px;
+    }
+
+    .welcome-label{
+      font-size:10px;
+      font-weight:700;
+      opacity:.9;
+    }
+
+    .welcome-value{
+      margin-top:4px;
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+
+    .stat-box{
+      border:1px solid rgba(226,232,240,.85);
+      border-radius:12px;
+      background:#fff;
+      box-shadow:var(--shadow-sm);
+      padding:10px 12px;
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .stat-value{
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .mode-pills{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .pill{
+      border:1px solid rgba(148,163,184,.20);
+      background:#fff;
+      padding:9px 13px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:13px;
+      font-weight:800;
+      color:var(--text);
+      transition:.18s ease;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .pill:hover{
+      transform:translateY(-1px);
+    }
+
+    .pill.active{
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
+      color:#fff;
+      border-color:transparent;
+    }
+
+    .simple-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
     label{
       display:block;
-      font-size:13px;
-      color:var(--muted);
       margin-bottom:6px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
     }
+
     select,input{
       width:100%;
-      border:1px solid var(--line);
+      padding:11px 12px;
       border-radius:12px;
-      padding:12px 14px;
-      font-size:14px;
+      border:1px solid rgba(148,163,184,.22);
       background:#fff;
+      font-size:13px;
+      color:var(--text);
+      outline:none;
     }
+
+    select:focus,input:focus{
+      border-color:#a5b4fc;
+      box-shadow:0 0 0 4px rgba(99,102,241,.10);
+    }
+
+    .search-row{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:end;
+    }
+
+    details.advanced{
+      border:1px solid rgba(148,163,184,.16);
+      border-radius:14px;
+      background:#fff;
+      box-shadow:var(--shadow-sm);
+      overflow:hidden;
+    }
+
+    details.advanced summary{
+      cursor:pointer;
+      list-style:none;
+      padding:13px 14px;
+      font-weight:900;
+      user-select:none;
+      font-size:13px;
+    }
+
+    details.advanced summary::-webkit-details-marker{
+      display:none;
+    }
+
+    .advanced-body{
+      border-top:1px solid rgba(226,232,240,.7);
+      padding:12px 14px 14px;
+      display:grid;
+      gap:12px;
+    }
+
     .checks{
       display:flex;
       flex-wrap:wrap;
-      gap:18px;
-      font-size:14px;
+      gap:14px;
+      font-size:13px;
     }
+
     .checks label{
-      margin:0;
-      color:var(--text);
       display:flex;
       align-items:center;
       gap:8px;
+      margin:0;
+      color:var(--text);
+      font-weight:700;
       cursor:pointer;
     }
+
     .btns{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
+      align-items:center;
     }
+
     button{
       border:none;
       border-radius:12px;
-      padding:12px 16px;
+      padding:11px 14px;
       cursor:pointer;
-      font-size:14px;
-      transition:.2s;
+      font-size:13px;
+      font-weight:800;
+      transition:.18s ease;
     }
+
+    button:hover:not(:disabled){
+      transform:translateY(-1px);
+    }
+
+    button:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
     .btn-primary{
-      background:var(--primary);
+      background:linear-gradient(135deg,#6d5efc,#4f7cff);
       color:#fff;
+      box-shadow:0 10px 20px rgba(79,70,229,.16);
     }
+
     .btn-secondary{
       background:#fff;
-      border:1px solid var(--line);
       color:var(--text);
+      border:1px solid rgba(148,163,184,.20);
     }
+
     .btn-danger{
-      background:#dc2626;
+      background:linear-gradient(135deg,#f87171,#ef4444);
       color:#fff;
     }
-    .question-top{
+
+    .btn-warn{
+      background:linear-gradient(135deg,#fbbf24,#f59e0b);
+      color:#fff;
+    }
+
+    .btn-info{
+      background:linear-gradient(135deg,#2dd4bf,#14b8a6);
+      color:#fff;
+    }
+
+    .helper{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .session-start{
+      display:grid;
+      gap:12px;
+      text-align:center;
+      padding:6px 0 2px;
+    }
+
+    .session-title{
+      font-size:24px;
+      font-weight:900;
+      line-height:1.35;
+    }
+
+    .session-text{
+      color:var(--muted);
+      line-height:1.8;
+      font-size:13px;
+      max-width:650px;
+      margin:0 auto;
+    }
+
+    .session-tags{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:8px;
+    }
+
+    .session-tag{
+      padding:7px 11px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(148,163,184,.16);
+      box-shadow:var(--shadow-sm);
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .status-bar{
       display:flex;
       flex-wrap:wrap;
       gap:8px;
       align-items:center;
-      margin-bottom:18px;
+      margin-bottom:12px;
     }
+
     .badge{
       padding:6px 10px;
       border-radius:999px;
-      font-size:12px;
-      border:1px solid var(--line);
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(148,163,184,.18);
       background:#fff;
     }
+
     .badge.primary{
       background:var(--primary-soft);
-      border-color:#bfdbfe;
-      color:#1d4ed8;
+      color:#5b21b6;
+      border-color:#ddd6fe;
     }
+
+    .badge.info{
+      background:var(--info-soft);
+      color:#0f766e;
+      border-color:#99f6e4;
+    }
+
+    .status-chip{
+      margin-left:auto;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(148,163,184,.18);
+      background:#f8fafc;
+    }
+
+    .status-chip.pending{
+      background:var(--warn-soft);
+      color:#b45309;
+      border-color:#fdba74;
+    }
+
+    .status-chip.correct{
+      background:var(--ok-soft);
+      color:var(--ok);
+      border-color:#86efac;
+    }
+
+    .status-chip.wrong{
+      background:var(--bad-soft);
+      color:var(--bad);
+      border-color:#fca5a5;
+    }
+
+    .question-progress{
+      margin-bottom:14px;
+    }
+
     .question-title{
-      font-size:26px;
-      font-weight:800;
-      line-height:1.7;
-      margin-bottom:20px;
+      font-size:24px;
+      line-height:1.65;
+      font-weight:900;
+      margin-bottom:10px;
+      letter-spacing:.1px;
     }
+
+    .question-sub{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+      margin-bottom:14px;
+    }
+
     .options{
       display:grid;
-      gap:12px;
+      gap:10px;
     }
+
     .option{
       width:100%;
       text-align:left;
-      padding:16px 18px;
-      border:1px solid var(--line);
+      padding:14px 15px;
       border-radius:16px;
+      border:1px solid rgba(148,163,184,.16);
       background:#fff;
-      font-size:16px;
-      line-height:1.7;
+      font-size:15px;
+      line-height:1.75;
+      color:var(--text);
+      box-shadow:var(--shadow-sm);
     }
+
+    .option:hover:not(:disabled){
+      background:#fafaff;
+      border-color:#c4b5fd;
+    }
+
     .option.selected{
-      border-color:#111827;
-      background:#f3f4f6;
+      background:#eef2ff;
+      border-color:#4338ca;
     }
+
     .option.correct{
-      border-color:var(--ok);
       background:var(--ok-soft);
+      border-color:var(--ok);
     }
+
     .option.wrong{
-      border-color:var(--bad);
       background:var(--bad-soft);
+      border-color:var(--bad);
     }
+
     .question-actions{
       display:flex;
       flex-wrap:wrap;
       gap:10px;
-      margin-top:18px;
+      margin-top:16px;
     }
+
     .explain{
-      margin-top:18px;
-      border:1px solid var(--line);
+      margin-top:16px;
+      padding:14px;
       border-radius:16px;
-      background:#f8fafc;
-      padding:16px;
+      border:1px solid rgba(148,163,184,.15);
+      background:linear-gradient(180deg,#fafbff,#ffffff);
       line-height:1.8;
+      font-size:14px;
     }
-    .ok{
-      color:var(--ok);
-      font-weight:800;
+
+    .ok{color:var(--ok);font-weight:900}
+    .bad{color:var(--bad);font-weight:900}
+
+    .progress-wrap{
+      margin-top:8px;
     }
-    .bad{
-      color:var(--bad);
-      font-weight:800;
-    }
-    .empty{
-      text-align:center;
-      padding:70px 20px;
-      color:var(--muted);
-      line-height:1.8;
-    }
+
     .progress{
       width:100%;
-      height:10px;
+      height:8px;
       border-radius:999px;
       background:#e5e7eb;
       overflow:hidden;
-      margin-top:10px;
     }
+
     .progress > div{
       height:100%;
-      background:var(--primary);
       width:0%;
+      background:linear-gradient(90deg,var(--primary),#60a5fa);
       transition:.25s;
     }
-    .list{
+
+    .chapter-progress,
+    .list,
+    .navigator-grid,
+    .dist-grid{
       display:grid;
-      gap:14px;
+      gap:10px;
     }
+
     .mini{
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:14px;
+      border:1px solid rgba(148,163,184,.14);
       background:#fff;
+      border-radius:14px;
+      padding:12px;
+      box-shadow:var(--shadow-sm);
     }
+
     .muted{
       color:var(--muted);
-      font-size:14px;
-      line-height:1.8;
+      font-size:13px;
+      line-height:1.7;
     }
-    .chapter-progress{
-      display:grid;
-      gap:14px;
+
+    .navigator-grid{
+      grid-template-columns:repeat(4,minmax(0,1fr));
     }
+
+    .nav-item{
+      border:none;
+      border-radius:12px;
+      padding:10px 8px;
+      font-weight:900;
+      background:#fff;
+      border:1px solid rgba(148,163,184,.14);
+      color:var(--text);
+      box-shadow:var(--shadow-sm);
+      font-size:13px;
+    }
+
+    .nav-item.current{
+      background:linear-gradient(135deg,var(--primary),var(--primary-2));
+      color:#fff;
+      border-color:transparent;
+    }
+
+    .nav-item.correct{
+      background:var(--ok-soft);
+      color:var(--ok);
+      border-color:#86efac;
+    }
+
+    .nav-item.wrong{
+      background:var(--bad-soft);
+      color:var(--bad);
+      border-color:#fca5a5;
+    }
+
+    .nav-item.review{
+      background:var(--warn-soft);
+      color:#b45309;
+      border-color:#fdba74;
+    }
+
+    .dist-grid{
+      grid-template-columns:repeat(4,minmax(0,1fr));
+    }
+
+    .dist-box{
+      background:#fff;
+      border:1px solid rgba(148,163,184,.14);
+      border-radius:14px;
+      padding:10px 8px;
+      text-align:center;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .dist-label{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .dist-value{
+      margin-top:4px;
+      font-size:22px;
+      font-weight:900;
+    }
+
     .chapter-bar{
       width:100%;
       height:8px;
@@ -284,66 +680,227 @@
       overflow:hidden;
       margin-top:7px;
     }
+
     .chapter-bar span{
       display:block;
       height:100%;
-      background:#10b981;
       width:0%;
+      background:linear-gradient(90deg,#22c55e,#4ade80);
     }
-    .footer-note{
-      font-size:14px;
-      line-height:1.9;
+
+    .timer-box{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:linear-gradient(135deg,#fff7ed,#ffffff);
+      border:1px solid #fed7aa;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .timer-value{
+      font-size:20px;
+      font-weight:900;
+      color:#b45309;
+      letter-spacing:.4px;
+    }
+
+    .result-hero{
+      display:grid;
+      gap:12px;
+      text-align:center;
+      padding:6px 0 2px;
+    }
+
+    .result-big{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.3;
+    }
+
+    .result-sub{
       color:var(--muted);
+      line-height:1.8;
+      font-size:13px;
     }
-    @media (max-width: 980px){
-      .top,.main,.filters{grid-template-columns:1fr}
-      .question-title{font-size:22px}
-      .wrap{padding:16px}
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .log-item{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.14);
+      background:#fff;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .log-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      margin-bottom:6px;
+    }
+
+    .log-ver{
+      font-weight:900;
+      font-size:13px;
+    }
+
+    .log-date{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+    }
+
+    .log-list{
+      margin:8px 0 0 18px;
+      padding:0;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:13px;
+    }
+
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:54px 18px;
+      line-height:1.8;
+      font-size:14px;
+    }
+
+    .sticky-mobile-bar{
+      display:none;
+    }
+
+    @media (max-width: 1100px){
+      .top-grid,
+      .main-grid,
+      .simple-grid,
+      .welcome-grid,
+      .result-grid{
+        grid-template-columns:1fr;
+      }
+      .search-row{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 768px){
+      .wrap{padding:12px}
+      h1{font-size:21px}
+      .sub{font-size:12px}
+      .welcome-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:8px;
+      }
+      .welcome-value{
+        font-size:15px;
+      }
+      .question-title{font-size:21px}
+      .session-title{font-size:21px}
+      .result-big{font-size:24px}
+      .navigator-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .dist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .question-actions{display:none}
+      .sticky-mobile-bar{
+        display:flex;
+        position:sticky;
+        bottom:10px;
+        z-index:50;
+        gap:10px;
+        padding-top:10px;
+      }
+      .sticky-mobile-bar button{flex:1}
     }
   </style>
 </head>
 <body>
   <div class="wrap grid">
-    <div class="grid top">
-      <div class="card">
-        <div class="hd">
-          <h1>生物化學刷題系統</h1>
-          <div class="sub">可直接本機開啟使用，支援一般練習、模擬測驗、錯題重刷、收藏、搜尋、進度保存。</div>
-        </div>
-        <div class="bd muted">
-          題庫先放 CH1 緒論、CH2 蛋白質、CH3 酶的基本特性。你之後只要繼續往題庫陣列加題，就能長期沿用。
+    <div class="grid top-grid">
+      <div class="card hero">
+        <div class="bd">
+          <h1 id="appName">生化補給站</h1>
+          <div class="sub">
+            今天也來補一點生化。選好模式和題數後，直接開始本回合就可以了。
+          </div>
+
+          <div class="hero-tags">
+            <span class="hero-tag" id="heroVersion">v5.1.0</span>
+            <span class="hero-tag">可抽 50 題</span>
+            <span class="hero-tag">錯題重刷</span>
+            <span class="hero-tag">這題晚點看</span>
+          </div>
+
+          <div class="welcome-grid">
+            <div class="welcome-box">
+              <div class="welcome-label">題庫總題數</div>
+              <div class="welcome-value" id="welcomeTotalQuestions">0</div>
+            </div>
+            <div class="welcome-box">
+              <div class="welcome-label">今日作答</div>
+              <div class="welcome-value" id="welcomeTodayAnswered">0</div>
+            </div>
+            <div class="welcome-box">
+              <div class="welcome-label">今日答對率</div>
+              <div class="welcome-value" id="welcomeTodayAccuracy">0%</div>
+            </div>
+            <div class="welcome-box">
+              <div class="welcome-label">版本</div>
+              <div class="welcome-value" id="welcomeVersion">v5.1.0</div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="hd"><h2>學習統計</h2></div>
-        <div class="bd stats">
-          <div class="row"><span>已作答</span><span class="value" id="statAnswered">0</span></div>
-          <div class="row"><span>答對率</span><span class="value" id="statAccuracy">0%</span></div>
-          <div class="row"><span>錯題數</span><span class="value" id="statWrong">0</span></div>
-          <div class="row"><span>收藏題</span><span class="value" id="statFav">0</span></div>
+      <div class="side-stack">
+        <div class="card">
+          <div class="hd"><h2>目前概況</h2></div>
+          <div class="bd stats-grid">
+            <div class="stat-box row"><span class="stat-label">已作答</span><span class="stat-value" id="statAnswered">0</span></div>
+            <div class="stat-box row"><span class="stat-label">總答對率</span><span class="stat-value" id="statAccuracy">0%</span></div>
+            <div class="stat-box row"><span class="stat-label">錯題數</span><span class="stat-value" id="statWrong">0</span></div>
+            <div class="stat-box row"><span class="stat-label">收藏題</span><span class="stat-value" id="statFav">0</span></div>
+          </div>
         </div>
-      </div>
 
-      <div class="card">
-        <div class="hd"><h2>本回合進度</h2></div>
-        <div class="bd stats">
-          <div class="row"><span>目前題數</span><span class="value" id="statQueue">0 / 0</span></div>
-          <div class="row"><span>本回合得分</span><span class="value" id="statSession">0 / 0</span></div>
-          <div class="row"><span>符合條件題庫</span><span class="value" id="statFiltered">0</span></div>
-          <div class="progress"><div id="progressBar"></div></div>
+        <div class="card">
+          <div class="hd"><h2>本回合摘要</h2></div>
+          <div class="bd stats-grid">
+            <div class="stat-box row"><span class="stat-label">目前題數</span><span class="stat-value" id="statQueue">0 / 0</span></div>
+            <div class="stat-box row"><span class="stat-label">本回合得分</span><span class="stat-value" id="statSession">0 / 0</span></div>
+            <div class="stat-box row"><span class="stat-label">尚未作答</span><span class="stat-value" id="statRemaining">0</span></div>
+            <div class="progress-wrap"><div class="progress"><div id="progressBar"></div></div></div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="card">
-      <div class="bd toolbar">
-        <div class="modes" id="modeButtons"></div>
+      <div class="bd grid" style="gap:14px;">
+        <div class="mode-pills" id="modeButtons"></div>
 
-        <div class="filters">
+        <div class="simple-grid">
           <div>
             <label>章節</label>
             <select id="chapterSelect"></select>
+          </div>
+          <div>
+            <label>本回合題數</label>
+            <select id="sessionSizeSelect">
+              <option value="10">10 題</option>
+              <option value="15">15 題</option>
+              <option value="20">20 題</option>
+              <option value="30">30 題</option>
+              <option value="50">50 題</option>
+              <option value="all">全部</option>
+            </select>
           </div>
           <div>
             <label>難度</label>
@@ -355,58 +912,103 @@
             </select>
           </div>
           <div>
-            <label>搜尋關鍵字</label>
-            <input id="searchInput" placeholder="例如：Km、鐮刀型貧血、胺基酸、緩衝系統" />
-          </div>
-          <div>
-            <label>模擬測驗題數</label>
-            <select id="examSizeSelect">
-              <option value="10">10 題</option>
-              <option value="15">15 題</option>
-              <option value="20">20 題</option>
-              <option value="30">30 題</option>
-            </select>
+            <label>模式說明</label>
+            <div class="stat-box" style="padding:11px 12px;">
+              <div class="muted" id="modeHint">一般練習會依本回合題數抽題。</div>
+            </div>
           </div>
         </div>
 
-        <div class="checks">
-          <label><input type="checkbox" id="randomOrder" checked> 題目隨機</label>
-          <label><input type="checkbox" id="shuffleOptions" checked> 選項隨機</label>
-          <label><input type="checkbox" id="autoNext"> 作答後自動下一題</label>
-          <label><input type="checkbox" id="showExplanation" checked> 顯示詳解</label>
+        <div class="search-row">
+          <div>
+            <label>搜尋關鍵字</label>
+            <input id="searchInput" placeholder="例如：Km、胺基酸、酶抑制、緩衝系統（按 Enter 套用）" />
+          </div>
+          <button class="btn-secondary" id="applyFiltersBtn">套用條件</button>
         </div>
+
+        <details class="advanced">
+          <summary>進階設定（需要再打開就好）</summary>
+          <div class="advanced-body">
+            <div class="checks">
+              <label><input type="checkbox" id="randomOrder" checked> 題目隨機</label>
+              <label><input type="checkbox" id="shuffleOptions" checked> 選項隨機</label>
+              <label><input type="checkbox" id="unansweredOnly"> 只看未作答</label>
+              <label><input type="checkbox" id="autoNext"> 作答後自動下一題</label>
+              <label><input type="checkbox" id="showExplanation" checked> 顯示詳解</label>
+            </div>
+          </div>
+        </details>
 
         <div class="btns">
-          <button class="btn-secondary" id="reloadBtn">重新載入本回合</button>
-          <button class="btn-danger" id="resetBtn">清空進度</button>
+          <button class="btn-primary" id="startSessionBtn">開始本回合</button>
+          <button class="btn-info" id="restartSessionBtn">再來一回合</button>
+          <button class="btn-secondary" id="reshuffleBtn">重抽題目</button>
+          <button class="btn-warn" id="finishExamBtn">提前交卷</button>
+          <button class="btn-danger" id="resetBtn">清空全部進度</button>
+        </div>
+
+        <div class="helper">
+          使用方式：先選模式與題數 → 按「開始本回合」→ 刷題 → 看結算。<br>
+          快捷鍵：<b>1 / 2 / 3 / 4</b> 選答案，<b>Enter</b> 提交 / 下一題，<b>← / →</b> 切題，<b>F</b> 加入收藏，<b>R</b> 這題晚點看。
         </div>
       </div>
     </div>
 
-    <div class="grid main">
+    <div class="grid main-grid">
       <div class="card">
         <div class="bd" id="questionArea"></div>
+        <div class="sticky-mobile-bar">
+          <button class="btn-secondary" id="mobilePrevBtn">上一題</button>
+          <button class="btn-primary" id="mobileSubmitBtn">提交</button>
+          <button class="btn-secondary" id="mobileNextBtn">下一題</button>
+        </div>
       </div>
 
-      <div class="grid">
+      <div class="side-stack">
+        <div class="card" id="timerCard" style="display:none;">
+          <div class="hd"><h2>模擬考倒數</h2></div>
+          <div class="bd">
+            <div class="timer-box">
+              <span class="stat-label">剩餘時間</span>
+              <span class="timer-value" id="timerText">00:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="navigatorCard" style="display:none;">
+          <div class="hd"><h2>題號導覽</h2></div>
+          <div class="bd">
+            <div class="navigator-grid" id="questionNavigator"></div>
+            <div class="muted" style="margin-top:8px;">模擬考才顯示題號導覽。</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2>答案分布</h2></div>
+          <div class="bd">
+            <div class="dist-grid">
+              <div class="dist-box"><div class="dist-label">A</div><div class="dist-value" id="distA">0</div></div>
+              <div class="dist-box"><div class="dist-label">B</div><div class="dist-value" id="distB">0</div></div>
+              <div class="dist-box"><div class="dist-label">C</div><div class="dist-value" id="distC">0</div></div>
+              <div class="dist-box"><div class="dist-label">D</div><div class="dist-value" id="distD">0</div></div>
+            </div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="hd"><h2>章節掌握度</h2></div>
           <div class="bd chapter-progress" id="chapterProgress"></div>
         </div>
 
         <div class="card">
-          <div class="hd"><h2>最近模擬測驗</h2></div>
+          <div class="hd"><h2>最近模擬考</h2></div>
           <div class="bd list" id="examHistory"></div>
         </div>
 
         <div class="card">
-          <div class="hd"><h2>長期擴充建議</h2></div>
-          <div class="bd footer-note">
-            1. 之後可以把題庫改成外部 JSON。<br>
-            2. 可以加是非題、填空題、圖題。<br>
-            3. 可以再做老師愛考題標記。<br>
-            4. 也能把 PDF 內容持續補成更大題庫。
-          </div>
+          <div class="hd"><h2>更新日誌</h2></div>
+          <div class="bd list" id="changelog"></div>
         </div>
       </div>
     </div>
@@ -414,23 +1016,55 @@
 
   <script src="questions.js"></script>
   <script>
-    const STORAGE_KEY = "biochem_quiz_local_v2";
+    const APP_NAME = "生化補給站";
+    const APP_VERSION = "v5.1.0";
+    const STORAGE_KEY = "biochem_supply_station_v51";
+
+    const CHANGELOG = [
+      {
+        version: "v5.1.0",
+        date: "2026-03-30",
+        items: [
+          "新增題目區作答百分比與進度條",
+          "調整整體版面比例，讓首頁更緊湊",
+          "右側統計卡縮短高度，減少空白感",
+          "上方主視覺與右側摘要改成更平衡的配置",
+          "完成百分比只讀取固定好的本回合題目，不影響隨機抽題"
+        ]
+      },
+      {
+        version: "v5.0.0",
+        date: "2026-03-30",
+        items: [
+          "整體操作重整為精簡版流程",
+          "題數只保留一個設定，一般練習與模擬考共用",
+          "搜尋改成按 Enter 或按套用條件",
+          "題號導覽只在模擬考顯示"
+        ]
+      }
+    ];
 
     const state = {
       mode: "practice",
       chapter: "all",
       difficulty: "all",
       search: "",
-      examSize: 10,
+      pendingSearch: "",
+      sessionSize: "30",
       queue: [],
       currentIndex: 0,
       selected: null,
       submitted: false,
       sessionCorrect: 0,
       sessionTotal: 0,
+      timerSeconds: 0,
+      timerId: null,
+      sessionStarted: false,
+      sessionFinished: false,
       settings: {
         randomOrder: true,
         shuffleOptions: true,
+        unansweredOnly: false,
         autoNext: false,
         showExplanation: true
       },
@@ -438,39 +1072,70 @@
         answered: {},
         wrongIds: [],
         favorites: [],
+        reviewIds: [],
         examHistory: []
       }
     };
 
     const els = {
+      appName: document.getElementById("appName"),
+      heroVersion: document.getElementById("heroVersion"),
+      welcomeVersion: document.getElementById("welcomeVersion"),
+      welcomeTotalQuestions: document.getElementById("welcomeTotalQuestions"),
+      welcomeTodayAnswered: document.getElementById("welcomeTodayAnswered"),
+      welcomeTodayAccuracy: document.getElementById("welcomeTodayAccuracy"),
+
       modeButtons: document.getElementById("modeButtons"),
       chapterSelect: document.getElementById("chapterSelect"),
       difficultySelect: document.getElementById("difficultySelect"),
       searchInput: document.getElementById("searchInput"),
-      examSizeSelect: document.getElementById("examSizeSelect"),
+      sessionSizeSelect: document.getElementById("sessionSizeSelect"),
       randomOrder: document.getElementById("randomOrder"),
       shuffleOptions: document.getElementById("shuffleOptions"),
+      unansweredOnly: document.getElementById("unansweredOnly"),
       autoNext: document.getElementById("autoNext"),
       showExplanation: document.getElementById("showExplanation"),
-      reloadBtn: document.getElementById("reloadBtn"),
+      applyFiltersBtn: document.getElementById("applyFiltersBtn"),
+      startSessionBtn: document.getElementById("startSessionBtn"),
+      restartSessionBtn: document.getElementById("restartSessionBtn"),
+      reshuffleBtn: document.getElementById("reshuffleBtn"),
+      finishExamBtn: document.getElementById("finishExamBtn"),
       resetBtn: document.getElementById("resetBtn"),
       questionArea: document.getElementById("questionArea"),
       chapterProgress: document.getElementById("chapterProgress"),
       examHistory: document.getElementById("examHistory"),
+      changelog: document.getElementById("changelog"),
       statAnswered: document.getElementById("statAnswered"),
       statAccuracy: document.getElementById("statAccuracy"),
       statWrong: document.getElementById("statWrong"),
       statFav: document.getElementById("statFav"),
       statQueue: document.getElementById("statQueue"),
       statSession: document.getElementById("statSession"),
-      statFiltered: document.getElementById("statFiltered"),
-      progressBar: document.getElementById("progressBar")
+      statRemaining: document.getElementById("statRemaining"),
+      progressBar: document.getElementById("progressBar"),
+      navigatorCard: document.getElementById("navigatorCard"),
+      questionNavigator: document.getElementById("questionNavigator"),
+      distA: document.getElementById("distA"),
+      distB: document.getElementById("distB"),
+      distC: document.getElementById("distC"),
+      distD: document.getElementById("distD"),
+      timerCard: document.getElementById("timerCard"),
+      timerText: document.getElementById("timerText"),
+      mobilePrevBtn: document.getElementById("mobilePrevBtn"),
+      mobileSubmitBtn: document.getElementById("mobileSubmitBtn"),
+      mobileNextBtn: document.getElementById("mobileNextBtn"),
+      modeHint: document.getElementById("modeHint")
     };
 
     function saveStore(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         store: state.store,
-        settings: state.settings
+        settings: state.settings,
+        sessionSize: state.sessionSize,
+        mode: state.mode,
+        chapter: state.chapter,
+        difficulty: state.difficulty,
+        search: state.search
       }));
     }
 
@@ -479,16 +1144,35 @@
       if(!raw) return;
       try{
         const parsed = JSON.parse(raw);
-        if(parsed.store) state.store = parsed.store;
-        if(parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
+        if(parsed.store){
+          state.store = {
+            answered: {},
+            wrongIds: [],
+            favorites: [],
+            reviewIds: [],
+            examHistory: [],
+            ...parsed.store
+          };
+        }
+        if(parsed.settings){
+          state.settings = { ...state.settings, ...parsed.settings };
+        }
+        if(parsed.sessionSize) state.sessionSize = parsed.sessionSize;
+        if(parsed.mode) state.mode = parsed.mode;
+        if(parsed.chapter) state.chapter = parsed.chapter;
+        if(parsed.difficulty) state.difficulty = parsed.difficulty;
+        if(typeof parsed.search === "string"){
+          state.search = parsed.search;
+          state.pendingSearch = parsed.search;
+        }
       }catch(e){}
     }
 
     function shuffle(arr){
       const a = [...arr];
-      for(let i=a.length-1;i>0;i--){
-        const j = Math.floor(Math.random()*(i+1));
-        [a[i],a[j]] = [a[j],a[i]];
+      for(let i = a.length - 1; i > 0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
       }
       return a;
     }
@@ -496,17 +1180,17 @@
     function shuffleQuestion(question){
       if(!state.settings.shuffleOptions) return { ...question };
 
-      const optionObjects = question.options.map((opt, idx) => ({
+      const optionObjects = (question.options || []).map((opt, idx) => ({
         text: opt,
         isCorrect: idx === question.answer
       }));
 
-      const shuffledOptions = shuffle(optionObjects);
+      const shuffled = shuffle(optionObjects);
 
       return {
         ...question,
-        options: shuffledOptions.map(item => item.text),
-        answer: shuffledOptions.findIndex(item => item.isCorrect)
+        options: shuffled.map(item => item.text),
+        answer: shuffled.findIndex(item => item.isCorrect)
       };
     }
 
@@ -536,6 +1220,10 @@
         );
       }
 
+      if(state.settings.unansweredOnly){
+        list = list.filter(q => !state.store.answered[q.id]);
+      }
+
       if(state.mode === "wrong"){
         list = list.filter(q => state.store.wrongIds.includes(q.id));
       }
@@ -544,19 +1232,55 @@
         list = list.filter(q => state.store.favorites.includes(q.id));
       }
 
+      if(state.mode === "review"){
+        list = list.filter(q => state.store.reviewIds.includes(q.id));
+      }
+
       return list;
     }
 
-    function buildQueue(){
+    function getLimitedList(list, limitValue){
+      if(limitValue === "all") return list;
+      const n = Number(limitValue);
+      if(!Number.isFinite(n)) return list;
+      return list.slice(0, Math.min(n, list.length));
+    }
+
+    function examSecondsBySize(size){
+      if(size <= 10) return 10 * 60;
+      if(size <= 15) return 15 * 60;
+      if(size <= 20) return 20 * 60;
+      if(size <= 30) return 30 * 60;
+      return 50 * 60;
+    }
+
+    function stopTimer(){
+      if(state.timerId){
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+    }
+
+    function formatTime(sec){
+      const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+      const ss = String(sec % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function getSessionProgressPercent(){
+      if(!state.queue.length) return 0;
+      const completed = state.submitted ? (state.currentIndex + 1) : state.currentIndex;
+      return Math.round((completed / state.queue.length) * 100);
+    }
+
+    function prepareSession(){
       let list = getFilteredQuestions().map(q => shuffleQuestion(q));
 
       if(state.settings.randomOrder){
         list = shuffle(list);
       }
 
-      if(state.mode === "exam"){
-        list = list.slice(0, Math.min(state.examSize, list.length));
-      }
+      list = getLimitedList(list, state.sessionSize);
 
       state.queue = list;
       state.currentIndex = 0;
@@ -564,6 +1288,112 @@
       state.submitted = false;
       state.sessionCorrect = 0;
       state.sessionTotal = 0;
+      state.sessionStarted = false;
+      state.sessionFinished = false;
+
+      stopTimer();
+      els.timerCard.style.display = "none";
+      renderAll();
+    }
+
+    function startSession(){
+      if(!state.queue.length){
+        prepareSession();
+      }
+      if(!state.queue.length){
+        renderAll();
+        return;
+      }
+
+      state.sessionStarted = true;
+      state.sessionFinished = false;
+      state.currentIndex = 0;
+      state.selected = null;
+      state.submitted = false;
+      state.sessionCorrect = 0;
+      state.sessionTotal = 0;
+
+      stopTimer();
+
+      if(state.mode === "exam"){
+        state.timerSeconds = examSecondsBySize(state.queue.length);
+        els.timerCard.style.display = "block";
+        els.timerText.textContent = formatTime(state.timerSeconds);
+
+        state.timerId = setInterval(() => {
+          state.timerSeconds--;
+          els.timerText.textContent = formatTime(Math.max(0, state.timerSeconds));
+          if(state.timerSeconds <= 0){
+            stopTimer();
+            finishSession(true);
+          }
+        }, 1000);
+      }else{
+        els.timerCard.style.display = "none";
+      }
+
+      renderAll();
+    }
+
+    function restartSession(){
+      if(!state.queue.length){
+        prepareSession();
+        return;
+      }
+      state.sessionStarted = true;
+      state.sessionFinished = false;
+      state.currentIndex = 0;
+      state.selected = null;
+      state.submitted = false;
+      state.sessionCorrect = 0;
+      state.sessionTotal = 0;
+
+      stopTimer();
+
+      if(state.mode === "exam"){
+        state.timerSeconds = examSecondsBySize(state.queue.length);
+        els.timerCard.style.display = "block";
+        els.timerText.textContent = formatTime(state.timerSeconds);
+
+        state.timerId = setInterval(() => {
+          state.timerSeconds--;
+          els.timerText.textContent = formatTime(Math.max(0, state.timerSeconds));
+          if(state.timerSeconds <= 0){
+            stopTimer();
+            finishSession(true);
+          }
+        }, 1000);
+      }else{
+        els.timerCard.style.display = "none";
+      }
+
+      renderAll();
+    }
+
+    function finishSession(timeout = false){
+      state.sessionFinished = true;
+      state.sessionStarted = false;
+      stopTimer();
+      els.timerCard.style.display = "none";
+
+      if(state.mode === "exam"){
+        state.store.examHistory.unshift({
+          at: new Date().toLocaleString(),
+          score: `${state.sessionCorrect}/${state.sessionTotal}`,
+          chapter: state.chapter,
+          difficulty: state.difficulty,
+          totalQueue: state.queue.length
+        });
+        state.store.examHistory = state.store.examHistory.slice(0, 10);
+      }
+
+      saveStore();
+
+      if(timeout){
+        setTimeout(() => {
+          alert(`時間到，本次補給已結算：${state.sessionCorrect} / ${state.sessionTotal}`);
+        }, 150);
+      }
 
       renderAll();
     }
@@ -572,20 +1402,37 @@
       return state.queue[state.currentIndex] || null;
     }
 
+    function getQueueRecord(q){
+      return state.store.answered[q.id] || null;
+    }
+
+    function questionStatus(q, index){
+      if(index === state.currentIndex) return "current";
+      if(state.store.reviewIds.includes(q.id)) return "review";
+      const record = getQueueRecord(q);
+      if(!record) return "unanswered";
+      return record.correct ? "correct" : "wrong";
+    }
+
     function toggleFavorite(id){
       const idx = state.store.favorites.indexOf(id);
-      if(idx >= 0){
-        state.store.favorites.splice(idx, 1);
-      }else{
-        state.store.favorites.push(id);
-      }
+      if(idx >= 0) state.store.favorites.splice(idx, 1);
+      else state.store.favorites.push(id);
+      saveStore();
+      renderAll();
+    }
+
+    function toggleReview(id){
+      const idx = state.store.reviewIds.indexOf(id);
+      if(idx >= 0) state.store.reviewIds.splice(idx, 1);
+      else state.store.reviewIds.push(id);
       saveStore();
       renderAll();
     }
 
     function submitAnswer(){
       const q = currentQuestion();
-      if(!q || state.selected === null || state.submitted) return;
+      if(!state.sessionStarted || !q || state.selected === null || state.submitted) return;
 
       const isCorrect = state.selected === q.answer;
       state.submitted = true;
@@ -603,34 +1450,36 @@
       else wrongSet.add(q.id);
       state.store.wrongIds = [...wrongSet];
 
-      if(state.mode === "exam" && state.currentIndex === state.queue.length - 1){
-        state.store.examHistory.unshift({
-          at: new Date().toLocaleString(),
-          score: `${state.sessionCorrect}/${state.sessionTotal}`,
-          chapter: state.chapter,
-          difficulty: state.difficulty
-        });
-        state.store.examHistory = state.store.examHistory.slice(0, 10);
-      }
-
       saveStore();
       renderAll();
 
       if(state.settings.autoNext){
-        setTimeout(nextQuestion, 700);
+        setTimeout(() => {
+          if(state.currentIndex >= state.queue.length - 1){
+            finishSession(false);
+          }else{
+            nextQuestion();
+          }
+        }, 800);
       }
     }
 
     function nextQuestion(){
+      if(!state.sessionStarted) return;
+
       if(state.currentIndex < state.queue.length - 1){
         state.currentIndex++;
         state.selected = null;
         state.submitted = false;
         renderAll();
+      }else{
+        finishSession(false);
       }
     }
 
     function prevQuestion(){
+      if(!state.sessionStarted) return;
+
       if(state.currentIndex > 0){
         state.currentIndex--;
         state.selected = null;
@@ -639,26 +1488,41 @@
       }
     }
 
+    function jumpToQuestion(index){
+      if(!state.sessionStarted || state.mode !== "exam") return;
+      state.currentIndex = index;
+      state.selected = null;
+      state.submitted = false;
+      renderAll();
+    }
+
     function resetProgress(){
       if(!confirm("確定要清空全部進度嗎？")) return;
-
       state.store = {
         answered: {},
         wrongIds: [],
         favorites: [],
+        reviewIds: [],
         examHistory: []
       };
-
       saveStore();
-      buildQueue();
+      prepareSession();
+    }
+
+    function applyFiltersAndPrepare(){
+      state.search = els.searchInput.value.trim();
+      state.pendingSearch = state.search;
+      saveStore();
+      prepareSession();
     }
 
     function renderModeButtons(){
       const modes = [
         { key: "practice", label: "一般練習" },
-        { key: "exam", label: "模擬測驗" },
+        { key: "exam", label: "模擬考" },
         { key: "wrong", label: "錯題重刷" },
-        { key: "favorites", label: "收藏複習" }
+        { key: "favorites", label: "收藏複習" },
+        { key: "review", label: "晚點再看" }
       ];
 
       els.modeButtons.innerHTML = modes.map(m => `
@@ -670,7 +1534,8 @@
       els.modeButtons.querySelectorAll("[data-mode]").forEach(btn => {
         btn.onclick = () => {
           state.mode = btn.dataset.mode;
-          buildQueue();
+          saveStore();
+          prepareSession();
         };
       });
     }
@@ -682,13 +1547,50 @@
       els.chapterSelect.value = state.chapter;
     }
 
+    function getTodayStats(){
+      const today = new Date().toLocaleDateString("sv-SE");
+      const todayRecords = Object.values(state.store.answered).filter(item => {
+        if(!item?.at) return false;
+        return new Date(item.at).toLocaleDateString("sv-SE") === today;
+      });
+      const todayAnswered = todayRecords.length;
+      const todayCorrect = todayRecords.filter(item => item.correct).length;
+      const todayAccuracy = todayAnswered ? Math.round(todayCorrect / todayAnswered * 100) : 0;
+      return { todayAnswered, todayAccuracy };
+    }
+
+    function renderWelcome(){
+      const { todayAnswered, todayAccuracy } = getTodayStats();
+      els.appName.textContent = APP_NAME;
+      els.heroVersion.textContent = APP_VERSION;
+      els.welcomeVersion.textContent = APP_VERSION;
+      els.welcomeTotalQuestions.textContent = QUESTION_BANK.length;
+      els.welcomeTodayAnswered.textContent = todayAnswered;
+      els.welcomeTodayAccuracy.textContent = `${todayAccuracy}%`;
+    }
+
+    function renderModeHint(){
+      const hints = {
+        practice: "一般練習會依本回合題數抽題。",
+        exam: "模擬考會依本回合題數抽題，並啟用倒數。",
+        wrong: "只會載入你答錯過的題目。",
+        favorites: "只會載入你加入收藏的題目。",
+        review: "只會載入你標記為晚點再看的題目。"
+      };
+      els.modeHint.textContent = hints[state.mode] || "";
+    }
+
     function renderStats(){
       const answeredCount = Object.keys(state.store.answered).length;
       const correctCount = Object.values(state.store.answered).filter(x => x.correct).length;
       const accuracy = answeredCount ? Math.round(correctCount / answeredCount * 100) : 0;
-      const filteredCount = getFilteredQuestions().length;
-      const queueText = `${state.queue.length ? state.currentIndex + 1 : 0} / ${state.queue.length}`;
-      const progress = state.queue.length ? ((state.currentIndex + 1) / state.queue.length) * 100 : 0;
+      const queueText = `${state.queue.length ? Math.min(state.currentIndex + 1, state.queue.length) : 0} / ${state.queue.length}`;
+      const progress = state.queue.length ? ((Math.min(state.currentIndex + 1, state.queue.length)) / state.queue.length) * 100 : 0;
+
+      let remaining = 0;
+      state.queue.forEach(q => {
+        if(!state.store.answered[q.id]) remaining++;
+      });
 
       els.statAnswered.textContent = answeredCount;
       els.statAccuracy.textContent = accuracy + "%";
@@ -696,33 +1598,178 @@
       els.statFav.textContent = state.store.favorites.length;
       els.statQueue.textContent = queueText;
       els.statSession.textContent = `${state.sessionCorrect} / ${state.sessionTotal}`;
-      els.statFiltered.textContent = filteredCount;
+      els.statRemaining.textContent = remaining;
       els.progressBar.style.width = progress + "%";
+    }
+
+    function renderDistribution(){
+      const counts = [0,0,0,0];
+      state.queue.forEach(q => {
+        if(Number.isInteger(q.answer) && q.answer >= 0 && q.answer < 4){
+          counts[q.answer]++;
+        }
+      });
+
+      els.distA.textContent = counts[0];
+      els.distB.textContent = counts[1];
+      els.distC.textContent = counts[2];
+      els.distD.textContent = counts[3];
+    }
+
+    function renderNavigator(){
+      const shouldShow = state.mode === "exam" && state.sessionStarted && !state.sessionFinished && state.queue.length;
+      els.navigatorCard.style.display = shouldShow ? "block" : "none";
+      if(!shouldShow) return;
+
+      const start = Math.max(0, state.currentIndex - 3);
+      const end = Math.min(state.queue.length, state.currentIndex + 4);
+      const visible = state.queue.slice(start, end);
+
+      els.questionNavigator.innerHTML = visible.map((q, offset) => {
+        const i = start + offset;
+        let cls = "nav-item";
+        const status = questionStatus(q, i);
+
+        if(status === "current") cls += " current";
+        else if(status === "correct") cls += " correct";
+        else if(status === "wrong") cls += " wrong";
+        else if(status === "review") cls += " review";
+
+        return `<button class="${cls}" data-jump="${i}">${i + 1}</button>`;
+      }).join("");
+
+      els.questionNavigator.querySelectorAll("[data-jump]").forEach(btn => {
+        btn.onclick = () => jumpToQuestion(Number(btn.dataset.jump));
+      });
+    }
+
+    function renderSessionWelcome(){
+      const modeTextMap = {
+        practice: "一般練習",
+        exam: "模擬考",
+        wrong: "錯題重刷",
+        favorites: "收藏複習",
+        review: "晚點再看"
+      };
+
+      els.questionArea.innerHTML = `
+        <div class="session-start">
+          <div class="session-title">今天要補哪一回？</div>
+          <div class="session-text">
+            題目已經幫你準備好了。確認模式和題數後，按下開始本回合，就可以直接進入刷題狀態。
+          </div>
+          <div class="session-tags">
+            <span class="session-tag">模式：${modeTextMap[state.mode] || "一般練習"}</span>
+            <span class="session-tag">章節：${state.chapter === "all" ? "全部章節" : state.chapter}</span>
+            <span class="session-tag">題數：${state.queue.length}</span>
+          </div>
+          <div class="btns" style="justify-content:center;">
+            <button class="btn-primary" id="beginNowBtn">開始本回合</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("beginNowBtn").onclick = startSession;
+      renderMobileButtons();
+    }
+
+    function renderResult(){
+      const wrongInSession = Math.max(0, state.sessionTotal - state.sessionCorrect);
+      const accuracy = state.sessionTotal ? Math.round((state.sessionCorrect / state.sessionTotal) * 100) : 0;
+
+      els.questionArea.innerHTML = `
+        <div class="result-hero">
+          <div class="result-big">本次補給完成</div>
+          <div class="result-sub">
+            先看這次表現，再決定要重來、補錯題，還是換下一回。
+          </div>
+
+          <div class="result-grid">
+            <div class="mini">
+              <div class="stat-label">本回合得分</div>
+              <div class="stat-value">${state.sessionCorrect} / ${state.sessionTotal}</div>
+            </div>
+            <div class="mini">
+              <div class="stat-label">本回合正答率</div>
+              <div class="stat-value">${accuracy}%</div>
+            </div>
+            <div class="mini">
+              <div class="stat-label">本回合錯題</div>
+              <div class="stat-value">${wrongInSession}</div>
+            </div>
+          </div>
+
+          <div class="btns" style="justify-content:center;">
+            <button class="btn-primary" id="resultRestartBtn">再來一回合</button>
+            <button class="btn-secondary" id="resultRebuildBtn">重抽題目</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("resultRestartBtn").onclick = restartSession;
+      document.getElementById("resultRebuildBtn").onclick = prepareSession;
+      renderMobileButtons();
     }
 
     function renderQuestion(){
       const q = currentQuestion();
 
-      if(!q){
+      if(!state.queue.length){
         els.questionArea.innerHTML = `
           <div class="empty">
             目前沒有符合條件的題目。<br>
-            你可以換章節、取消搜尋，或先去一般練習建立錯題資料。
+            你可以換章節、取消搜尋、取消未作答條件，或把本回合題數改大一點。
           </div>
         `;
+        renderMobileButtons();
+        return;
+      }
+
+      if(!state.sessionStarted && !state.sessionFinished){
+        renderSessionWelcome();
+        return;
+      }
+
+      if(state.sessionFinished){
+        renderResult();
+        return;
+      }
+
+      if(!q){
+        renderResult();
         return;
       }
 
       const fav = state.store.favorites.includes(q.id);
+      const review = state.store.reviewIds.includes(q.id);
+
+      let statusClass = "pending";
+      let statusText = "尚未提交";
+      if(state.submitted){
+        statusClass = state.selected === q.answer ? "correct" : "wrong";
+        statusText = state.selected === q.answer ? "本題答對" : "本題答錯";
+      }
+
+      const progressPercent = getSessionProgressPercent();
+
       const topBadges = `
-        <div class="question-top">
+        <div class="status-bar">
           <span class="badge primary">${q.chapter || ""}</span>
           <span class="badge">${q.section || ""}</span>
           <span class="badge">${q.difficulty || ""}</span>
           ${(q.tags || []).map(t => `<span class="badge">#${t}</span>`).join("")}
-          <button class="btn-secondary" style="margin-left:auto;padding:8px 12px" id="favBtn">
-            ${fav ? "★ 已收藏" : "☆ 收藏"}
-          </button>
+          ${review ? `<span class="badge info">晚點再看</span>` : ""}
+          <span class="status-chip ${statusClass}">${statusText}</span>
+        </div>
+
+        <div class="mini question-progress">
+          <div class="row" style="margin-bottom:8px;">
+            <span class="stat-label">作答進度</span>
+            <span style="font-weight:900;">第 ${state.currentIndex + 1} / ${state.queue.length} 題・${progressPercent}%</span>
+          </div>
+          <div class="progress">
+            <div style="width:${progressPercent}%"></div>
+          </div>
         </div>
       `;
 
@@ -746,10 +1793,12 @@
             <div class="${state.selected === q.answer ? "ok" : "bad"}">
               ${state.selected === q.answer ? "答對了" : "這題答錯了"}
             </div>
-            <div style="margin-top:8px">
+            <div style="margin-top:8px;">
               正確答案：<b>${String.fromCharCode(65 + q.answer)}. ${q.options[q.answer]}</b>
             </div>
-            <div style="margin-top:8px">詳解：${q.explanation || "尚未提供詳解"}</div>
+            <div style="margin-top:8px;">
+              詳解：${q.explanation || "尚未提供詳解"}
+            </div>
           </div>
         `;
       }
@@ -757,12 +1806,19 @@
       els.questionArea.innerHTML = `
         ${topBadges}
         <div class="question-title">${q.question || ""}</div>
+        <div class="question-sub">
+          題目 ID：${q.id || "-"}　｜　快捷鍵：1~4、Enter、F、R
+        </div>
         <div class="options">${options}</div>
+
         <div class="question-actions">
           <button class="btn-primary" id="submitBtn" ${state.selected === null || state.submitted ? "disabled" : ""}>提交答案</button>
           <button class="btn-secondary" id="prevBtn" ${state.currentIndex === 0 ? "disabled" : ""}>上一題</button>
-          <button class="btn-secondary" id="nextBtn" ${state.currentIndex >= state.queue.length - 1 ? "disabled" : ""}>下一題</button>
+          <button class="btn-secondary" id="nextBtn">下一題</button>
+          <button class="btn-secondary" id="favBtn">${fav ? "已收藏" : "加入收藏"}</button>
+          <button class="btn-warn" id="reviewBtn">${review ? "取消晚點看" : "這題晚點看"}</button>
         </div>
+
         ${explain}
       `;
 
@@ -778,6 +1834,20 @@
       document.getElementById("prevBtn").onclick = prevQuestion;
       document.getElementById("nextBtn").onclick = nextQuestion;
       document.getElementById("favBtn").onclick = () => toggleFavorite(q.id);
+      document.getElementById("reviewBtn").onclick = () => toggleReview(q.id);
+
+      renderMobileButtons();
+    }
+
+    function renderMobileButtons(){
+      const interactive = state.sessionStarted && !state.sessionFinished;
+      els.mobilePrevBtn.disabled = !interactive || state.currentIndex === 0;
+      els.mobileSubmitBtn.disabled = !interactive || state.selected === null || state.submitted;
+      els.mobileNextBtn.disabled = !interactive;
+
+      els.mobilePrevBtn.onclick = prevQuestion;
+      els.mobileSubmitBtn.onclick = submitAnswer;
+      els.mobileNextBtn.onclick = nextQuestion;
     }
 
     function renderChapterProgress(){
@@ -790,7 +1860,7 @@
         const pct = total ? Math.round(correct / total * 100) : 0;
 
         return `
-          <div>
+          <div class="mini">
             <div class="row">
               <span>${ch}</span>
               <span>${correct}/${total}</span>
@@ -803,7 +1873,7 @@
 
     function renderExamHistory(){
       if(!state.store.examHistory.length){
-        els.examHistory.innerHTML = `<div class="muted">還沒有模擬測驗紀錄。</div>`;
+        els.examHistory.innerHTML = `<div class="muted">還沒有模擬考紀錄。</div>`;
         return;
       }
 
@@ -816,45 +1886,70 @@
       `).join("");
     }
 
+    function renderChangelog(){
+      els.changelog.innerHTML = CHANGELOG.map(log => `
+        <div class="log-item">
+          <div class="log-top">
+            <span class="log-ver">${log.version}</span>
+            <span class="log-date">${log.date}</span>
+          </div>
+          <ul class="log-list">
+            ${log.items.map(item => `<li>${item}</li>`).join("")}
+          </ul>
+        </div>
+      `).join("");
+    }
+
     function renderAll(){
+      renderWelcome();
+      renderModeHint();
       renderModeButtons();
       renderStats();
+      renderDistribution();
+      renderNavigator();
       renderQuestion();
       renderChapterProgress();
       renderExamHistory();
+      renderChangelog();
+
+      els.finishExamBtn.style.display = (state.mode === "exam" && state.sessionStarted && !state.sessionFinished) ? "inline-flex" : "none";
     }
 
     function bindControls(){
       els.chapterSelect.onchange = e => {
         state.chapter = e.target.value;
-        buildQueue();
+        saveStore();
+        prepareSession();
       };
 
       els.difficultySelect.onchange = e => {
         state.difficulty = e.target.value;
-        buildQueue();
+        saveStore();
+        prepareSession();
       };
 
-      els.searchInput.oninput = e => {
-        state.search = e.target.value;
-        buildQueue();
-      };
-
-      els.examSizeSelect.onchange = e => {
-        state.examSize = Number(e.target.value);
-        buildQueue();
+      els.sessionSizeSelect.onchange = e => {
+        state.sessionSize = e.target.value;
+        saveStore();
+        prepareSession();
       };
 
       els.randomOrder.onchange = e => {
         state.settings.randomOrder = e.target.checked;
         saveStore();
-        buildQueue();
+        prepareSession();
       };
 
       els.shuffleOptions.onchange = e => {
         state.settings.shuffleOptions = e.target.checked;
         saveStore();
-        buildQueue();
+        prepareSession();
+      };
+
+      els.unansweredOnly.onchange = e => {
+        state.settings.unansweredOnly = e.target.checked;
+        saveStore();
+        prepareSession();
       };
 
       els.autoNext.onchange = e => {
@@ -868,8 +1963,73 @@
         renderAll();
       };
 
-      els.reloadBtn.onclick = buildQueue;
+      els.searchInput.addEventListener("input", e => {
+        state.pendingSearch = e.target.value;
+      });
+
+      els.searchInput.addEventListener("keydown", e => {
+        if(e.key === "Enter"){
+          e.preventDefault();
+          applyFiltersAndPrepare();
+        }
+      });
+
+      els.applyFiltersBtn.onclick = applyFiltersAndPrepare;
+      els.startSessionBtn.onclick = startSession;
+      els.restartSessionBtn.onclick = restartSession;
+      els.reshuffleBtn.onclick = prepareSession;
+      els.finishExamBtn.onclick = () => {
+        if(state.mode !== "exam" || !state.sessionStarted) return;
+        if(confirm("要提前交卷並結算這次模擬考嗎？")){
+          finishSession(false);
+        }
+      };
       els.resetBtn.onclick = resetProgress;
+    }
+
+    function bindKeyboard(){
+      document.addEventListener("keydown", e => {
+        const tag = document.activeElement?.tagName?.toLowerCase();
+        if(tag === "input" || tag === "select" || tag === "textarea") return;
+
+        if(!state.sessionStarted && !state.sessionFinished){
+          if(e.key === "Enter"){
+            startSession();
+          }
+          return;
+        }
+
+        if(state.sessionFinished){
+          if(e.key === "Enter"){
+            restartSession();
+          }
+          return;
+        }
+
+        const q = currentQuestion();
+        if(!q) return;
+
+        if(["1","2","3","4"].includes(e.key) && !state.submitted){
+          const idx = Number(e.key) - 1;
+          if(idx < (q.options || []).length){
+            state.selected = idx;
+            renderQuestion();
+          }
+        }
+
+        if(e.key === "Enter"){
+          if(!state.submitted && state.selected !== null){
+            submitAnswer();
+          }else{
+            nextQuestion();
+          }
+        }
+
+        if(e.key === "ArrowLeft") prevQuestion();
+        if(e.key === "ArrowRight") nextQuestion();
+        if(e.key.toLowerCase() === "f") toggleFavorite(q.id);
+        if(e.key.toLowerCase() === "r") toggleReview(q.id);
+      });
     }
 
     function init(){
@@ -877,15 +2037,17 @@
       renderChapterSelect();
 
       els.difficultySelect.value = state.difficulty;
-      els.searchInput.value = state.search;
-      els.examSizeSelect.value = String(state.examSize);
+      els.searchInput.value = state.pendingSearch;
+      els.sessionSizeSelect.value = String(state.sessionSize);
       els.randomOrder.checked = state.settings.randomOrder;
       els.shuffleOptions.checked = state.settings.shuffleOptions;
+      els.unansweredOnly.checked = state.settings.unansweredOnly;
       els.autoNext.checked = state.settings.autoNext;
       els.showExplanation.checked = state.settings.showExplanation;
 
       bindControls();
-      buildQueue();
+      bindKeyboard();
+      prepareSession();
     }
 
     init();
