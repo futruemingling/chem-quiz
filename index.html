@@ -351,6 +351,7 @@
               <option value="all">全部難度</option>
               <option value="easy">easy</option>
               <option value="medium">medium</option>
+              <option value="hard">hard</option>
             </select>
           </div>
           <div>
@@ -370,6 +371,7 @@
 
         <div class="checks">
           <label><input type="checkbox" id="randomOrder" checked> 題目隨機</label>
+          <label><input type="checkbox" id="shuffleOptions" checked> 選項隨機</label>
           <label><input type="checkbox" id="autoNext"> 作答後自動下一題</label>
           <label><input type="checkbox" id="showExplanation" checked> 顯示詳解</label>
         </div>
@@ -412,7 +414,7 @@
 
   <script src="questions.js"></script>
   <script>
-    const STORAGE_KEY = "biochem_quiz_local_v1";
+    const STORAGE_KEY = "biochem_quiz_local_v2";
 
     const state = {
       mode: "practice",
@@ -428,6 +430,7 @@
       sessionTotal: 0,
       settings: {
         randomOrder: true,
+        shuffleOptions: true,
         autoNext: false,
         showExplanation: true
       },
@@ -446,6 +449,7 @@
       searchInput: document.getElementById("searchInput"),
       examSizeSelect: document.getElementById("examSizeSelect"),
       randomOrder: document.getElementById("randomOrder"),
+      shuffleOptions: document.getElementById("shuffleOptions"),
       autoNext: document.getElementById("autoNext"),
       showExplanation: document.getElementById("showExplanation"),
       reloadBtn: document.getElementById("reloadBtn"),
@@ -476,7 +480,7 @@
       try{
         const parsed = JSON.parse(raw);
         if(parsed.store) state.store = parsed.store;
-        if(parsed.settings) state.settings = {...state.settings, ...parsed.settings};
+        if(parsed.settings) state.settings = { ...state.settings, ...parsed.settings };
       }catch(e){}
     }
 
@@ -489,49 +493,78 @@
       return a;
     }
 
+    function shuffleQuestion(question){
+      if(!state.settings.shuffleOptions) return { ...question };
+
+      const optionObjects = question.options.map((opt, idx) => ({
+        text: opt,
+        isCorrect: idx === question.answer
+      }));
+
+      const shuffledOptions = shuffle(optionObjects);
+
+      return {
+        ...question,
+        options: shuffledOptions.map(item => item.text),
+        answer: shuffledOptions.findIndex(item => item.isCorrect)
+      };
+    }
+
     function getChapters(){
-      return ["all", ...new Set(QUESTION_BANK.map(q=>q.chapter))];
+      return ["all", ...new Set(QUESTION_BANK.map(q => q.chapter))];
     }
 
     function getFilteredQuestions(){
       let list = [...QUESTION_BANK];
+
       if(state.chapter !== "all"){
         list = list.filter(q => q.chapter === state.chapter);
       }
+
       if(state.difficulty !== "all"){
         list = list.filter(q => q.difficulty === state.difficulty);
       }
+
       if(state.search.trim()){
         const s = state.search.trim().toLowerCase();
         list = list.filter(q =>
-          q.question.toLowerCase().includes(s) ||
-          q.section.toLowerCase().includes(s) ||
-          q.tags.join(" ").toLowerCase().includes(s)
+          String(q.question || "").toLowerCase().includes(s) ||
+          String(q.section || "").toLowerCase().includes(s) ||
+          String(q.chapter || "").toLowerCase().includes(s) ||
+          (Array.isArray(q.tags) ? q.tags.join(" ").toLowerCase().includes(s) : false) ||
+          (Array.isArray(q.options) ? q.options.join(" ").toLowerCase().includes(s) : false)
         );
       }
+
       if(state.mode === "wrong"){
         list = list.filter(q => state.store.wrongIds.includes(q.id));
       }
+
       if(state.mode === "favorites"){
         list = list.filter(q => state.store.favorites.includes(q.id));
       }
+
       return list;
     }
 
     function buildQueue(){
-      let list = getFilteredQuestions();
-      if(state.mode === "exam"){
-        if(state.settings.randomOrder) list = shuffle(list);
-        list = list.slice(0, Math.min(state.examSize, list.length));
-      }else{
-        if(state.settings.randomOrder) list = shuffle(list);
+      let list = getFilteredQuestions().map(q => shuffleQuestion(q));
+
+      if(state.settings.randomOrder){
+        list = shuffle(list);
       }
+
+      if(state.mode === "exam"){
+        list = list.slice(0, Math.min(state.examSize, list.length));
+      }
+
       state.queue = list;
       state.currentIndex = 0;
       state.selected = null;
       state.submitted = false;
       state.sessionCorrect = 0;
       state.sessionTotal = 0;
+
       renderAll();
     }
 
@@ -542,7 +575,7 @@
     function toggleFavorite(id){
       const idx = state.store.favorites.indexOf(id);
       if(idx >= 0){
-        state.store.favorites.splice(idx,1);
+        state.store.favorites.splice(idx, 1);
       }else{
         state.store.favorites.push(id);
       }
@@ -577,7 +610,7 @@
           chapter: state.chapter,
           difficulty: state.difficulty
         });
-        state.store.examHistory = state.store.examHistory.slice(0,10);
+        state.store.examHistory = state.store.examHistory.slice(0, 10);
       }
 
       saveStore();
@@ -608,28 +641,34 @@
 
     function resetProgress(){
       if(!confirm("確定要清空全部進度嗎？")) return;
+
       state.store = {
-        answered:{},
-        wrongIds:[],
-        favorites:[],
-        examHistory:[]
+        answered: {},
+        wrongIds: [],
+        favorites: [],
+        examHistory: []
       };
+
       saveStore();
       buildQueue();
     }
 
     function renderModeButtons(){
       const modes = [
-        {key:"practice", label:"一般練習"},
-        {key:"exam", label:"模擬測驗"},
-        {key:"wrong", label:"錯題重刷"},
-        {key:"favorites", label:"收藏複習"}
+        { key: "practice", label: "一般練習" },
+        { key: "exam", label: "模擬測驗" },
+        { key: "wrong", label: "錯題重刷" },
+        { key: "favorites", label: "收藏複習" }
       ];
+
       els.modeButtons.innerHTML = modes.map(m => `
-        <button class="pill ${state.mode===m.key?'active':''}" data-mode="${m.key}">${m.label}</button>
+        <button class="pill ${state.mode === m.key ? "active" : ""}" data-mode="${m.key}">
+          ${m.label}
+        </button>
       `).join("");
-      els.modeButtons.querySelectorAll("[data-mode]").forEach(btn=>{
-        btn.onclick = ()=>{
+
+      els.modeButtons.querySelectorAll("[data-mode]").forEach(btn => {
+        btn.onclick = () => {
           state.mode = btn.dataset.mode;
           buildQueue();
         };
@@ -638,14 +677,14 @@
 
     function renderChapterSelect(){
       els.chapterSelect.innerHTML = getChapters().map(c => `
-        <option value="${c}">${c==="all"?"全部章節":c}</option>
+        <option value="${c}">${c === "all" ? "全部章節" : c}</option>
       `).join("");
       els.chapterSelect.value = state.chapter;
     }
 
     function renderStats(){
       const answeredCount = Object.keys(state.store.answered).length;
-      const correctCount = Object.values(state.store.answered).filter(x=>x.correct).length;
+      const correctCount = Object.values(state.store.answered).filter(x => x.correct).length;
       const accuracy = answeredCount ? Math.round(correctCount / answeredCount * 100) : 0;
       const filteredCount = getFilteredQuestions().length;
       const queueText = `${state.queue.length ? state.currentIndex + 1 : 0} / ${state.queue.length}`;
@@ -663,6 +702,7 @@
 
     function renderQuestion(){
       const q = currentQuestion();
+
       if(!q){
         els.questionArea.innerHTML = `
           <div class="empty">
@@ -676,49 +716,58 @@
       const fav = state.store.favorites.includes(q.id);
       const topBadges = `
         <div class="question-top">
-          <span class="badge primary">${q.chapter}</span>
-          <span class="badge">${q.section}</span>
-          <span class="badge">${q.difficulty}</span>
-          ${q.tags.map(t=>`<span class="badge">#${t}</span>`).join("")}
-          <button class="btn-secondary" style="margin-left:auto;padding:8px 12px" id="favBtn">${fav ? "★ 已收藏" : "☆ 收藏"}</button>
+          <span class="badge primary">${q.chapter || ""}</span>
+          <span class="badge">${q.section || ""}</span>
+          <span class="badge">${q.difficulty || ""}</span>
+          ${(q.tags || []).map(t => `<span class="badge">#${t}</span>`).join("")}
+          <button class="btn-secondary" style="margin-left:auto;padding:8px 12px" id="favBtn">
+            ${fav ? "★ 已收藏" : "☆ 收藏"}
+          </button>
         </div>
       `;
 
-      const options = q.options.map((opt, idx)=>{
+      const options = (q.options || []).map((opt, idx) => {
         let cls = "option";
         if(state.selected === idx) cls += " selected";
         if(state.submitted && idx === q.answer) cls += " correct";
         if(state.submitted && idx === state.selected && idx !== q.answer) cls += " wrong";
-        return `<button class="${cls}" data-option="${idx}"><b>${String.fromCharCode(65+idx)}.</b> ${opt}</button>`;
+
+        return `
+          <button class="${cls}" data-option="${idx}">
+            <b>${String.fromCharCode(65 + idx)}.</b> ${opt}
+          </button>
+        `;
       }).join("");
 
       let explain = "";
       if(state.submitted && state.settings.showExplanation){
         explain = `
           <div class="explain">
-            <div class="${state.selected===q.answer ? 'ok':'bad'}">
-              ${state.selected===q.answer ? "答對了" : "這題答錯了"}
+            <div class="${state.selected === q.answer ? "ok" : "bad"}">
+              ${state.selected === q.answer ? "答對了" : "這題答錯了"}
             </div>
-            <div style="margin-top:8px">正確答案：<b>${String.fromCharCode(65+q.answer)}. ${q.options[q.answer]}</b></div>
-            <div style="margin-top:8px">詳解：${q.explanation}</div>
+            <div style="margin-top:8px">
+              正確答案：<b>${String.fromCharCode(65 + q.answer)}. ${q.options[q.answer]}</b>
+            </div>
+            <div style="margin-top:8px">詳解：${q.explanation || "尚未提供詳解"}</div>
           </div>
         `;
       }
 
       els.questionArea.innerHTML = `
         ${topBadges}
-        <div class="question-title">${q.question}</div>
+        <div class="question-title">${q.question || ""}</div>
         <div class="options">${options}</div>
         <div class="question-actions">
-          <button class="btn-primary" id="submitBtn" ${state.selected===null || state.submitted ? "disabled" : ""}>提交答案</button>
-          <button class="btn-secondary" id="prevBtn" ${state.currentIndex===0 ? "disabled":""}>上一題</button>
-          <button class="btn-secondary" id="nextBtn" ${state.currentIndex>=state.queue.length-1 ? "disabled":""}>下一題</button>
+          <button class="btn-primary" id="submitBtn" ${state.selected === null || state.submitted ? "disabled" : ""}>提交答案</button>
+          <button class="btn-secondary" id="prevBtn" ${state.currentIndex === 0 ? "disabled" : ""}>上一題</button>
+          <button class="btn-secondary" id="nextBtn" ${state.currentIndex >= state.queue.length - 1 ? "disabled" : ""}>下一題</button>
         </div>
         ${explain}
       `;
 
-      document.querySelectorAll("[data-option]").forEach(btn=>{
-        btn.onclick = ()=>{
+      document.querySelectorAll("[data-option]").forEach(btn => {
+        btn.onclick = () => {
           if(state.submitted) return;
           state.selected = Number(btn.dataset.option);
           renderQuestion();
@@ -728,16 +777,18 @@
       document.getElementById("submitBtn").onclick = submitAnswer;
       document.getElementById("prevBtn").onclick = prevQuestion;
       document.getElementById("nextBtn").onclick = nextQuestion;
-      document.getElementById("favBtn").onclick = ()=>toggleFavorite(q.id);
+      document.getElementById("favBtn").onclick = () => toggleFavorite(q.id);
     }
 
     function renderChapterProgress(){
-      const chapters = getChapters().filter(c=>c!=="all");
-      els.chapterProgress.innerHTML = chapters.map(ch=>{
-        const all = QUESTION_BANK.filter(q=>q.chapter===ch);
-        const correct = all.filter(q=>state.store.answered[q.id]?.correct).length;
+      const chapters = getChapters().filter(c => c !== "all");
+
+      els.chapterProgress.innerHTML = chapters.map(ch => {
+        const all = QUESTION_BANK.filter(q => q.chapter === ch);
+        const correct = all.filter(q => state.store.answered[q.id]?.correct).length;
         const total = all.length;
         const pct = total ? Math.round(correct / total * 100) : 0;
+
         return `
           <div>
             <div class="row">
@@ -755,11 +806,12 @@
         els.examHistory.innerHTML = `<div class="muted">還沒有模擬測驗紀錄。</div>`;
         return;
       }
-      els.examHistory.innerHTML = state.store.examHistory.map(item=>`
+
+      els.examHistory.innerHTML = state.store.examHistory.map(item => `
         <div class="mini">
           <div><b>${item.score}</b></div>
           <div class="muted">${item.at}</div>
-          <div class="muted">${item.chapter==="all"?"全部章節":item.chapter}｜${item.difficulty}</div>
+          <div class="muted">${item.chapter === "all" ? "全部章節" : item.chapter}｜${item.difficulty}</div>
         </div>
       `).join("");
     }
@@ -773,36 +825,49 @@
     }
 
     function bindControls(){
-      els.chapterSelect.onchange = e=>{
+      els.chapterSelect.onchange = e => {
         state.chapter = e.target.value;
         buildQueue();
       };
-      els.difficultySelect.onchange = e=>{
+
+      els.difficultySelect.onchange = e => {
         state.difficulty = e.target.value;
         buildQueue();
       };
-      els.searchInput.oninput = e=>{
+
+      els.searchInput.oninput = e => {
         state.search = e.target.value;
         buildQueue();
       };
-      els.examSizeSelect.onchange = e=>{
+
+      els.examSizeSelect.onchange = e => {
         state.examSize = Number(e.target.value);
         buildQueue();
       };
-      els.randomOrder.onchange = e=>{
+
+      els.randomOrder.onchange = e => {
         state.settings.randomOrder = e.target.checked;
         saveStore();
         buildQueue();
       };
-      els.autoNext.onchange = e=>{
+
+      els.shuffleOptions.onchange = e => {
+        state.settings.shuffleOptions = e.target.checked;
+        saveStore();
+        buildQueue();
+      };
+
+      els.autoNext.onchange = e => {
         state.settings.autoNext = e.target.checked;
         saveStore();
       };
-      els.showExplanation.onchange = e=>{
+
+      els.showExplanation.onchange = e => {
         state.settings.showExplanation = e.target.checked;
         saveStore();
         renderAll();
       };
+
       els.reloadBtn.onclick = buildQueue;
       els.resetBtn.onclick = resetProgress;
     }
@@ -815,6 +880,7 @@
       els.searchInput.value = state.search;
       els.examSizeSelect.value = String(state.examSize);
       els.randomOrder.checked = state.settings.randomOrder;
+      els.shuffleOptions.checked = state.settings.shuffleOptions;
       els.autoNext.checked = state.settings.autoNext;
       els.showExplanation.checked = state.settings.showExplanation;
 
