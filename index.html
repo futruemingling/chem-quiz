@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>生物化學刷題系統</title>
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --line:#d9e1ea;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --primary:#2563eb;
+      --primary-soft:#dbeafe;
+      --ok:#15803d;
+      --ok-soft:#dcfce7;
+      --bad:#b91c1c;
+      --bad-soft:#fee2e2;
+      --warn:#92400e;
+      --warn-soft:#fef3c7;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:24px;
+    }
+    .grid{
+      display:grid;
+      gap:18px;
+    }
+    .top{
+      grid-template-columns:repeat(3,1fr);
+    }
+    .main{
+      grid-template-columns:1.35fr .75fr;
+      align-items:start;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card .hd{
+      padding:18px 20px 10px;
+      border-bottom:1px solid #eef2f7;
+    }
+    .card .bd{
+      padding:18px 20px 20px;
+    }
+    h1,h2,h3,p{margin:0}
+    h1{font-size:24px}
+    h2{font-size:20px}
+    h3{font-size:16px}
+    .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:14px;
+      line-height:1.7;
+    }
+    .stats{
+      display:grid;
+      gap:12px;
+      margin-top:8px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+    }
+    .value{
+      font-weight:700;
+    }
+    .toolbar{
+      display:grid;
+      gap:14px;
+    }
+    .modes{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .pill{
+      border:1px solid var(--line);
+      background:#fff;
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:14px;
+      transition:.2s;
+    }
+    .pill.active{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+    .filters{
+      display:grid;
+      grid-template-columns:1fr 1fr 1.2fr 180px;
+      gap:12px;
+    }
+    label{
+      display:block;
+      font-size:13px;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    select,input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px 14px;
+      font-size:14px;
+      background:#fff;
+    }
+    .checks{
+      display:flex;
+      flex-wrap:wrap;
+      gap:18px;
+      font-size:14px;
+    }
+    .checks label{
+      margin:0;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+    }
+    .btns{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    button{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-size:14px;
+      transition:.2s;
+    }
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+    .btn-secondary{
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--text);
+    }
+    .btn-danger{
+      background:#dc2626;
+      color:#fff;
+    }
+    .question-top{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+    .badge{
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+    .badge.primary{
+      background:var(--primary-soft);
+      border-color:#bfdbfe;
+      color:#1d4ed8;
+    }
+    .question-title{
+      font-size:26px;
+      font-weight:800;
+      line-height:1.7;
+      margin-bottom:20px;
+    }
+    .options{
+      display:grid;
+      gap:12px;
+    }
+    .option{
+      width:100%;
+      text-align:left;
+      padding:16px 18px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      font-size:16px;
+      line-height:1.7;
+    }
+    .option.selected{
+      border-color:#111827;
+      background:#f3f4f6;
+    }
+    .option.correct{
+      border-color:var(--ok);
+      background:var(--ok-soft);
+    }
+    .option.wrong{
+      border-color:var(--bad);
+      background:var(--bad-soft);
+    }
+    .question-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:18px;
+    }
+    .explain{
+      margin-top:18px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#f8fafc;
+      padding:16px;
+      line-height:1.8;
+    }
+    .ok{
+      color:var(--ok);
+      font-weight:800;
+    }
+    .bad{
+      color:var(--bad);
+      font-weight:800;
+    }
+    .empty{
+      text-align:center;
+      padding:70px 20px;
+      color:var(--muted);
+      line-height:1.8;
+    }
+    .progress{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+      margin-top:10px;
+    }
+    .progress > div{
+      height:100%;
+      background:var(--primary);
+      width:0%;
+      transition:.25s;
+    }
+    .list{
+      display:grid;
+      gap:14px;
+    }
+    .mini{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:14px;
+      background:#fff;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.8;
+    }
+    .chapter-progress{
+      display:grid;
+      gap:14px;
+    }
+    .chapter-bar{
+      width:100%;
+      height:8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      overflow:hidden;
+      margin-top:7px;
+    }
+    .chapter-bar span{
+      display:block;
+      height:100%;
+      background:#10b981;
+      width:0%;
+    }
+    .footer-note{
+      font-size:14px;
+      line-height:1.9;
+      color:var(--muted);
+    }
+    @media (max-width: 980px){
+      .top,.main,.filters{grid-template-columns:1fr}
+      .question-title{font-size:22px}
+      .wrap{padding:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap grid">
+    <div class="grid top">
+      <div class="card">
+        <div class="hd">
+          <h1>生物化學刷題系統</h1>
+          <div class="sub">可直接本機開啟使用，支援一般練習、模擬測驗、錯題重刷、收藏、搜尋、進度保存。</div>
+        </div>
+        <div class="bd muted">
+          題庫先放 CH1 緒論、CH2 蛋白質、CH3 酶的基本特性。你之後只要繼續往題庫陣列加題，就能長期沿用。
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>學習統計</h2></div>
+        <div class="bd stats">
+          <div class="row"><span>已作答</span><span class="value" id="statAnswered">0</span></div>
+          <div class="row"><span>答對率</span><span class="value" id="statAccuracy">0%</span></div>
+          <div class="row"><span>錯題數</span><span class="value" id="statWrong">0</span></div>
+          <div class="row"><span>收藏題</span><span class="value" id="statFav">0</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>本回合進度</h2></div>
+        <div class="bd stats">
+          <div class="row"><span>目前題數</span><span class="value" id="statQueue">0 / 0</span></div>
+          <div class="row"><span>本回合得分</span><span class="value" id="statSession">0 / 0</span></div>
+          <div class="row"><span>符合條件題庫</span><span class="value" id="statFiltered">0</span></div>
+          <div class="progress"><div id="progressBar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bd toolbar">
+        <div class="modes" id="modeButtons"></div>
+
+        <div class="filters">
+          <div>
+            <label>章節</label>
+            <select id="chapterSelect"></select>
+          </div>
+          <div>
+            <label>難度</label>
+            <select id="difficultySelect">
+              <option value="all">全部難度</option>
+              <option value="easy">easy</option>
+              <option value="medium">medium</option>
+            </select>
+          </div>
+          <div>
+            <label>搜尋關鍵字</label>
+            <input id="searchInput" placeholder="例如：Km、鐮刀型貧血、胺基酸、緩衝系統" />
+          </div>
+          <div>
+            <label>模擬測驗題數</label>
+            <select id="examSizeSelect">
+              <option value="10">10 題</option>
+              <option value="15">15 題</option>
+              <option value="20">20 題</option>
+              <option value="30">30 題</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="checks">
+          <label><input type="checkbox" id="randomOrder" checked> 題目隨機</label>
+          <label><input type="checkbox" id="autoNext"> 作答後自動下一題</label>
+          <label><input type="checkbox" id="showExplanation" checked> 顯示詳解</label>
+        </div>
+
+        <div class="btns">
+          <button class="btn-secondary" id="reloadBtn">重新載入本回合</button>
+          <button class="btn-danger" id="resetBtn">清空進度</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid main">
+      <div class="card">
+        <div class="bd" id="questionArea"></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="hd"><h2>章節掌握度</h2></div>
+          <div class="bd chapter-progress" id="chapterProgress"></div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2>最近模擬測驗</h2></div>
+          <div class="bd list" id="examHistory"></div>
+        </div>
+
+        <div class="card">
+          <div class="hd"><h2>長期擴充建議</h2></div>
+          <div class="bd footer-note">
+            1. 之後可以把題庫改成外部 JSON。<br>
+            2. 可以加是非題、填空題、圖題。<br>
+            3. 可以再做老師愛考題標記。<br>
+            4. 也能把 PDF 內容持續補成更大題庫。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="questions.js"></script>
+  <script>
+    const STORAGE_KEY = "biochem_quiz_local_v1";
+
+    const state = {
+      mode: "practice",
+      chapter: "all",
+      difficulty: "all",
+      search: "",
+      examSize: 10,
+      queue: [],
+      currentIndex: 0,
+      selected: null,
+      submitted: false,
+      sessionCorrect: 0,
+      sessionTotal: 0,
+      settings: {
+        randomOrder: true,
+        autoNext: false,
+        showExplanation: true
+      },
+      store: {
+        answered: {},
+        wrongIds: [],
+        favorites: [],
+        examHistory: []
+      }
+    };
+
+    const els = {
+      modeButtons: document.getElementById("modeButtons"),
+      chapterSelect: document.getElementById("chapterSelect"),
+      difficultySelect: document.getElementById("difficultySelect"),
+      searchInput: document.getElementById("searchInput"),
+      examSizeSelect: document.getElementById("examSizeSelect"),
+      randomOrder: document.getElementById("randomOrder"),
+      autoNext: document.getElementById("autoNext"),
+      showExplanation: document.getElementById("showExplanation"),
+      reloadBtn: document.getElementById("reloadBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      questionArea: document.getElementById("questionArea"),
+      chapterProgress: document.getElementById("chapterProgress"),
+      examHistory: document.getElementById("examHistory"),
+      statAnswered: document.getElementById("statAnswered"),
+      statAccuracy: document.getElementById("statAccuracy"),
+      statWrong: document.getElementById("statWrong"),
+      statFav: document.getElementById("statFav"),
+      statQueue: document.getElementById("statQueue"),
+      statSession: document.getElementById("statSession"),
+      statFiltered: document.getElementById("statFiltered"),
+      progressBar: document.getElementById("progressBar")
+    };
+
+    function saveStore(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        store: state.store,
+        settings: state.settings
+      }));
+    }
+
+    function loadStore(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try{
+        const parsed = JSON.parse(raw);
+        if(parsed.store) state.store = parsed.store;
+        if(parsed.settings) state.settings = {...state.settings, ...parsed.settings};
+      }catch(e){}
+    }
+
+    function shuffle(arr){
+      const a = [...arr];
+      for(let i=a.length-1;i>0;i--){
+        const j = Math.floor(Math.random()*(i+1));
+        [a[i],a[j]] = [a[j],a[i]];
+      }
+      return a;
+    }
+
+    function getChapters(){
+      return ["all", ...new Set(QUESTION_BANK.map(q=>q.chapter))];
+    }
+
+    function getFilteredQuestions(){
+      let list = [...QUESTION_BANK];
+      if(state.chapter !== "all"){
+        list = list.filter(q => q.chapter === state.chapter);
+      }
+      if(state.difficulty !== "all"){
+        list = list.filter(q => q.difficulty === state.difficulty);
+      }
+      if(state.search.trim()){
+        const s = state.search.trim().toLowerCase();
+        list = list.filter(q =>
+          q.question.toLowerCase().includes(s) ||
+          q.section.toLowerCase().includes(s) ||
+          q.tags.join(" ").toLowerCase().includes(s)
+        );
+      }
+      if(state.mode === "wrong"){
+        list = list.filter(q => state.store.wrongIds.includes(q.id));
+      }
+      if(state.mode === "favorites"){
+        list = list.filter(q => state.store.favorites.includes(q.id));
+      }
+      return list;
+    }
+
+    function buildQueue(){
+      let list = getFilteredQuestions();
+      if(state.mode === "exam"){
+        if(state.settings.randomOrder) list = shuffle(list);
+        list = list.slice(0, Math.min(state.examSize, list.length));
+      }else{
+        if(state.settings.randomOrder) list = shuffle(list);
+      }
+      state.queue = list;
+      state.currentIndex = 0;
+      state.selected = null;
+      state.submitted = false;
+      state.sessionCorrect = 0;
+      state.sessionTotal = 0;
+      renderAll();
+    }
+
+    function currentQuestion(){
+      return state.queue[state.currentIndex] || null;
+    }
+
+    function toggleFavorite(id){
+      const idx = state.store.favorites.indexOf(id);
+      if(idx >= 0){
+        state.store.favorites.splice(idx,1);
+      }else{
+        state.store.favorites.push(id);
+      }
+      saveStore();
+      renderAll();
+    }
+
+    function submitAnswer(){
+      const q = currentQuestion();
+      if(!q || state.selected === null || state.submitted) return;
+
+      const isCorrect = state.selected === q.answer;
+      state.submitted = true;
+      state.sessionTotal++;
+      if(isCorrect) state.sessionCorrect++;
+
+      state.store.answered[q.id] = {
+        selected: state.selected,
+        correct: isCorrect,
+        at: new Date().toISOString()
+      };
+
+      const wrongSet = new Set(state.store.wrongIds);
+      if(isCorrect) wrongSet.delete(q.id);
+      else wrongSet.add(q.id);
+      state.store.wrongIds = [...wrongSet];
+
+      if(state.mode === "exam" && state.currentIndex === state.queue.length - 1){
+        state.store.examHistory.unshift({
+          at: new Date().toLocaleString(),
+          score: `${state.sessionCorrect}/${state.sessionTotal}`,
+          chapter: state.chapter,
+          difficulty: state.difficulty
+        });
+        state.store.examHistory = state.store.examHistory.slice(0,10);
+      }
+
+      saveStore();
+      renderAll();
+
+      if(state.settings.autoNext){
+        setTimeout(nextQuestion, 700);
+      }
+    }
+
+    function nextQuestion(){
+      if(state.currentIndex < state.queue.length - 1){
+        state.currentIndex++;
+        state.selected = null;
+        state.submitted = false;
+        renderAll();
+      }
+    }
+
+    function prevQuestion(){
+      if(state.currentIndex > 0){
+        state.currentIndex--;
+        state.selected = null;
+        state.submitted = false;
+        renderAll();
+      }
+    }
+
+    function resetProgress(){
+      if(!confirm("確定要清空全部進度嗎？")) return;
+      state.store = {
+        answered:{},
+        wrongIds:[],
+        favorites:[],
+        examHistory:[]
+      };
+      saveStore();
+      buildQueue();
+    }
+
+    function renderModeButtons(){
+      const modes = [
+        {key:"practice", label:"一般練習"},
+        {key:"exam", label:"模擬測驗"},
+        {key:"wrong", label:"錯題重刷"},
+        {key:"favorites", label:"收藏複習"}
+      ];
+      els.modeButtons.innerHTML = modes.map(m => `
+        <button class="pill ${state.mode===m.key?'active':''}" data-mode="${m.key}">${m.label}</button>
+      `).join("");
+      els.modeButtons.querySelectorAll("[data-mode]").forEach(btn=>{
+        btn.onclick = ()=>{
+          state.mode = btn.dataset.mode;
+          buildQueue();
+        };
+      });
+    }
+
+    function renderChapterSelect(){
+      els.chapterSelect.innerHTML = getChapters().map(c => `
+        <option value="${c}">${c==="all"?"全部章節":c}</option>
+      `).join("");
+      els.chapterSelect.value = state.chapter;
+    }
+
+    function renderStats(){
+      const answeredCount = Object.keys(state.store.answered).length;
+      const correctCount = Object.values(state.store.answered).filter(x=>x.correct).length;
+      const accuracy = answeredCount ? Math.round(correctCount / answeredCount * 100) : 0;
+      const filteredCount = getFilteredQuestions().length;
+      const queueText = `${state.queue.length ? state.currentIndex + 1 : 0} / ${state.queue.length}`;
+      const progress = state.queue.length ? ((state.currentIndex + 1) / state.queue.length) * 100 : 0;
+
+      els.statAnswered.textContent = answeredCount;
+      els.statAccuracy.textContent = accuracy + "%";
+      els.statWrong.textContent = state.store.wrongIds.length;
+      els.statFav.textContent = state.store.favorites.length;
+      els.statQueue.textContent = queueText;
+      els.statSession.textContent = `${state.sessionCorrect} / ${state.sessionTotal}`;
+      els.statFiltered.textContent = filteredCount;
+      els.progressBar.style.width = progress + "%";
+    }
+
+    function renderQuestion(){
+      const q = currentQuestion();
+      if(!q){
+        els.questionArea.innerHTML = `
+          <div class="empty">
+            目前沒有符合條件的題目。<br>
+            你可以換章節、取消搜尋，或先去一般練習建立錯題資料。
+          </div>
+        `;
+        return;
+      }
+
+      const fav = state.store.favorites.includes(q.id);
+      const topBadges = `
+        <div class="question-top">
+          <span class="badge primary">${q.chapter}</span>
+          <span class="badge">${q.section}</span>
+          <span class="badge">${q.difficulty}</span>
+          ${q.tags.map(t=>`<span class="badge">#${t}</span>`).join("")}
+          <button class="btn-secondary" style="margin-left:auto;padding:8px 12px" id="favBtn">${fav ? "★ 已收藏" : "☆ 收藏"}</button>
+        </div>
+      `;
+
+      const options = q.options.map((opt, idx)=>{
+        let cls = "option";
+        if(state.selected === idx) cls += " selected";
+        if(state.submitted && idx === q.answer) cls += " correct";
+        if(state.submitted && idx === state.selected && idx !== q.answer) cls += " wrong";
+        return `<button class="${cls}" data-option="${idx}"><b>${String.fromCharCode(65+idx)}.</b> ${opt}</button>`;
+      }).join("");
+
+      let explain = "";
+      if(state.submitted && state.settings.showExplanation){
+        explain = `
+          <div class="explain">
+            <div class="${state.selected===q.answer ? 'ok':'bad'}">
+              ${state.selected===q.answer ? "答對了" : "這題答錯了"}
+            </div>
+            <div style="margin-top:8px">正確答案：<b>${String.fromCharCode(65+q.answer)}. ${q.options[q.answer]}</b></div>
+            <div style="margin-top:8px">詳解：${q.explanation}</div>
+          </div>
+        `;
+      }
+
+      els.questionArea.innerHTML = `
+        ${topBadges}
+        <div class="question-title">${q.question}</div>
+        <div class="options">${options}</div>
+        <div class="question-actions">
+          <button class="btn-primary" id="submitBtn" ${state.selected===null || state.submitted ? "disabled" : ""}>提交答案</button>
+          <button class="btn-secondary" id="prevBtn" ${state.currentIndex===0 ? "disabled":""}>上一題</button>
+          <button class="btn-secondary" id="nextBtn" ${state.currentIndex>=state.queue.length-1 ? "disabled":""}>下一題</button>
+        </div>
+        ${explain}
+      `;
+
+      document.querySelectorAll("[data-option]").forEach(btn=>{
+        btn.onclick = ()=>{
+          if(state.submitted) return;
+          state.selected = Number(btn.dataset.option);
+          renderQuestion();
+        };
+      });
+
+      document.getElementById("submitBtn").onclick = submitAnswer;
+      document.getElementById("prevBtn").onclick = prevQuestion;
+      document.getElementById("nextBtn").onclick = nextQuestion;
+      document.getElementById("favBtn").onclick = ()=>toggleFavorite(q.id);
+    }
+
+    function renderChapterProgress(){
+      const chapters = getChapters().filter(c=>c!=="all");
+      els.chapterProgress.innerHTML = chapters.map(ch=>{
+        const all = QUESTION_BANK.filter(q=>q.chapter===ch);
+        const correct = all.filter(q=>state.store.answered[q.id]?.correct).length;
+        const total = all.length;
+        const pct = total ? Math.round(correct / total * 100) : 0;
+        return `
+          <div>
+            <div class="row">
+              <span>${ch}</span>
+              <span>${correct}/${total}</span>
+            </div>
+            <div class="chapter-bar"><span style="width:${pct}%"></span></div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderExamHistory(){
+      if(!state.store.examHistory.length){
+        els.examHistory.innerHTML = `<div class="muted">還沒有模擬測驗紀錄。</div>`;
+        return;
+      }
+      els.examHistory.innerHTML = state.store.examHistory.map(item=>`
+        <div class="mini">
+          <div><b>${item.score}</b></div>
+          <div class="muted">${item.at}</div>
+          <div class="muted">${item.chapter==="all"?"全部章節":item.chapter}｜${item.difficulty}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderAll(){
+      renderModeButtons();
+      renderStats();
+      renderQuestion();
+      renderChapterProgress();
+      renderExamHistory();
+    }
+
+    function bindControls(){
+      els.chapterSelect.onchange = e=>{
+        state.chapter = e.target.value;
+        buildQueue();
+      };
+      els.difficultySelect.onchange = e=>{
+        state.difficulty = e.target.value;
+        buildQueue();
+      };
+      els.searchInput.oninput = e=>{
+        state.search = e.target.value;
+        buildQueue();
+      };
+      els.examSizeSelect.onchange = e=>{
+        state.examSize = Number(e.target.value);
+        buildQueue();
+      };
+      els.randomOrder.onchange = e=>{
+        state.settings.randomOrder = e.target.checked;
+        saveStore();
+        buildQueue();
+      };
+      els.autoNext.onchange = e=>{
+        state.settings.autoNext = e.target.checked;
+        saveStore();
+      };
+      els.showExplanation.onchange = e=>{
+        state.settings.showExplanation = e.target.checked;
+        saveStore();
+        renderAll();
+      };
+      els.reloadBtn.onclick = buildQueue;
+      els.resetBtn.onclick = resetProgress;
+    }
+
+    function init(){
+      loadStore();
+      renderChapterSelect();
+
+      els.difficultySelect.value = state.difficulty;
+      els.searchInput.value = state.search;
+      els.examSizeSelect.value = String(state.examSize);
+      els.randomOrder.checked = state.settings.randomOrder;
+      els.autoNext.checked = state.settings.autoNext;
+      els.showExplanation.checked = state.settings.showExplanation;
+
+      bindControls();
+      buildQueue();
+    }
+
+    init();
+  </script>
+</body>
+</html>
