@@ -775,6 +775,57 @@
       font-size:14px;
     }
 
+
+
+    .record-card .bd{
+      display:grid;
+      gap:10px;
+    }
+
+    .record-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .record-item{
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(148,163,184,.14);
+      background:#fff;
+      box-shadow:var(--shadow-sm);
+    }
+
+    .record-item-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:8px;
+      flex-wrap:wrap;
+    }
+
+    .record-item-title{
+      font-size:13px;
+      font-weight:900;
+    }
+
+    .record-item-meta{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.7;
+    }
+
+    .record-item-answer{
+      margin-top:6px;
+      font-size:13px;
+      line-height:1.8;
+    }
+
+    .record-item-answer b{
+      font-weight:900;
+    }
+
     .sticky-mobile-bar{
       display:none;
     }
@@ -1012,6 +1063,20 @@
         </div>
       </div>
     </div>
+
+    <div class="card record-card">
+      <div class="hd">
+        <div class="row">
+          <h2>答題紀錄</h2>
+          <div class="record-actions">
+            <button class="btn-secondary" id="toggleRecordsBtn">展開 / 收起</button>
+            <button class="btn-danger" id="clearRecordsBtn">清除答題紀錄</button>
+          </div>
+        </div>
+      </div>
+      <div class="bd" id="answerLogArea"></div>
+    </div>
+
   </div>
 
   <script src="questions.js"></script>
@@ -1073,7 +1138,11 @@
         wrongIds: [],
         favorites: [],
         reviewIds: [],
-        examHistory: []
+        examHistory: [],
+        answerLog: []
+      },
+      ui: {
+        recordsExpanded: true
       }
     };
 
@@ -1105,6 +1174,9 @@
       chapterProgress: document.getElementById("chapterProgress"),
       examHistory: document.getElementById("examHistory"),
       changelog: document.getElementById("changelog"),
+      answerLogArea: document.getElementById("answerLogArea"),
+      toggleRecordsBtn: document.getElementById("toggleRecordsBtn"),
+      clearRecordsBtn: document.getElementById("clearRecordsBtn"),
       statAnswered: document.getElementById("statAnswered"),
       statAccuracy: document.getElementById("statAccuracy"),
       statWrong: document.getElementById("statWrong"),
@@ -1135,7 +1207,19 @@
         mode: state.mode,
         chapter: state.chapter,
         difficulty: state.difficulty,
-        search: state.search
+        search: state.search,
+        ui: state.ui,
+        session: {
+          queue: state.queue,
+          currentIndex: state.currentIndex,
+          selected: state.selected,
+          submitted: state.submitted,
+          sessionCorrect: state.sessionCorrect,
+          sessionTotal: state.sessionTotal,
+          timerSeconds: state.timerSeconds,
+          sessionStarted: state.sessionStarted,
+          sessionFinished: state.sessionFinished
+        }
       }));
     }
 
@@ -1151,11 +1235,15 @@
             favorites: [],
             reviewIds: [],
             examHistory: [],
+            answerLog: [],
             ...parsed.store
           };
         }
         if(parsed.settings){
           state.settings = { ...state.settings, ...parsed.settings };
+        }
+        if(parsed.ui){
+          state.ui = { ...state.ui, ...parsed.ui };
         }
         if(parsed.sessionSize) state.sessionSize = parsed.sessionSize;
         if(parsed.mode) state.mode = parsed.mode;
@@ -1164,6 +1252,17 @@
         if(typeof parsed.search === "string"){
           state.search = parsed.search;
           state.pendingSearch = parsed.search;
+        }
+        if(parsed.session){
+          state.queue = Array.isArray(parsed.session.queue) ? parsed.session.queue : [];
+          state.currentIndex = Number.isInteger(parsed.session.currentIndex) ? parsed.session.currentIndex : 0;
+          state.selected = parsed.session.selected ?? null;
+          state.submitted = !!parsed.session.submitted;
+          state.sessionCorrect = parsed.session.sessionCorrect || 0;
+          state.sessionTotal = parsed.session.sessionTotal || 0;
+          state.timerSeconds = parsed.session.timerSeconds || 0;
+          state.sessionStarted = !!parsed.session.sessionStarted;
+          state.sessionFinished = !!parsed.session.sessionFinished;
         }
       }catch(e){}
     }
@@ -1293,6 +1392,7 @@
 
       stopTimer();
       els.timerCard.style.display = "none";
+      saveStore();
       renderAll();
     }
 
@@ -1332,6 +1432,7 @@
         els.timerCard.style.display = "none";
       }
 
+      saveStore();
       renderAll();
     }
 
@@ -1367,6 +1468,7 @@
         els.timerCard.style.display = "none";
       }
 
+      saveStore();
       renderAll();
     }
 
@@ -1450,6 +1552,23 @@
       else wrongSet.add(q.id);
       state.store.wrongIds = [...wrongSet];
 
+      state.store.answerLog = Array.isArray(state.store.answerLog) ? state.store.answerLog : [];
+      state.store.answerLog.unshift({
+        questionId: q.id,
+        chapter: q.chapter || "",
+        section: q.section || "",
+        question: q.question || "",
+        selectedIndex: state.selected,
+        selectedText: q.options?.[state.selected] || "",
+        correctIndex: q.answer,
+        correctText: q.options?.[q.answer] || "",
+        correct: isCorrect,
+        mode: state.mode,
+        timeISO: new Date().toISOString(),
+        timeText: new Date().toLocaleString("zh-TW")
+      });
+      state.store.answerLog = state.store.answerLog.slice(0, 300);
+
       saveStore();
       renderAll();
 
@@ -1471,6 +1590,7 @@
         state.currentIndex++;
         state.selected = null;
         state.submitted = false;
+        saveStore();
         renderAll();
       }else{
         finishSession(false);
@@ -1484,6 +1604,7 @@
         state.currentIndex--;
         state.selected = null;
         state.submitted = false;
+        saveStore();
         renderAll();
       }
     }
@@ -1493,6 +1614,7 @@
       state.currentIndex = index;
       state.selected = null;
       state.submitted = false;
+      saveStore();
       renderAll();
     }
 
@@ -1503,7 +1625,8 @@
         wrongIds: [],
         favorites: [],
         reviewIds: [],
-        examHistory: []
+        examHistory: [],
+        answerLog: []
       };
       saveStore();
       prepareSession();
@@ -1549,9 +1672,10 @@
 
     function getTodayStats(){
       const today = new Date().toLocaleDateString("sv-SE");
-      const todayRecords = Object.values(state.store.answered).filter(item => {
-        if(!item?.at) return false;
-        return new Date(item.at).toLocaleDateString("sv-SE") === today;
+      const logs = Array.isArray(state.store.answerLog) ? state.store.answerLog : [];
+      const todayRecords = logs.filter(item => {
+        if(!item?.timeISO) return false;
+        return new Date(item.timeISO).toLocaleDateString("sv-SE") === today;
       });
       const todayAnswered = todayRecords.length;
       const todayCorrect = todayRecords.filter(item => item.correct).length;
@@ -1581,8 +1705,9 @@
     }
 
     function renderStats(){
-      const answeredCount = Object.keys(state.store.answered).length;
-      const correctCount = Object.values(state.store.answered).filter(x => x.correct).length;
+      const logs = Array.isArray(state.store.answerLog) ? state.store.answerLog : [];
+      const answeredCount = logs.length;
+      const correctCount = logs.filter(x => x.correct).length;
       const accuracy = answeredCount ? Math.round(correctCount / answeredCount * 100) : 0;
       const queueText = `${state.queue.length ? Math.min(state.currentIndex + 1, state.queue.length) : 0} / ${state.queue.length}`;
       const progress = state.queue.length ? ((Math.min(state.currentIndex + 1, state.queue.length)) / state.queue.length) * 100 : 0;
@@ -1900,6 +2025,37 @@
       `).join("");
     }
 
+    function renderAnswerLog(){
+      const logs = Array.isArray(state.store.answerLog) ? state.store.answerLog : [];
+
+      if(els.toggleRecordsBtn){
+        els.toggleRecordsBtn.textContent = state.ui.recordsExpanded ? "收起紀錄" : `展開紀錄（${logs.length}）`;
+      }
+
+      if(!state.ui.recordsExpanded){
+        els.answerLogArea.innerHTML = `<div class="muted">答題紀錄目前已收起，共 ${logs.length} 筆。</div>`;
+        return;
+      }
+
+      if(!logs.length){
+        els.answerLogArea.innerHTML = `<div class="muted">目前還沒有答題紀錄，開始作答後就會留在這裡，不會一重整就消失。</div>`;
+        return;
+      }
+
+      els.answerLogArea.innerHTML = logs.slice(0, 20).map((item, idx) => `
+        <div class="record-item">
+          <div class="record-item-top">
+            <div class="record-item-title">${logs.length - idx}. ${item.questionId || "-"}｜${item.chapter || "未分類"}</div>
+            <div class="status-chip ${item.correct ? "correct" : "wrong"}">${item.correct ? "答對" : "答錯"}</div>
+          </div>
+          <div class="record-item-meta">${item.timeText || "-"}｜模式：${item.mode || "practice"}${item.section ? `｜${item.section}` : ""}</div>
+          <div class="record-item-answer">${item.question || ""}</div>
+          <div class="record-item-answer"><b>你的答案：</b>${item.selectedText || "未作答"}</div>
+          <div class="record-item-answer"><b>正確答案：</b>${item.correctText || "-"}</div>
+        </div>
+      `).join("");
+    }
+
     function renderAll(){
       renderWelcome();
       renderModeHint();
@@ -1911,6 +2067,7 @@
       renderChapterProgress();
       renderExamHistory();
       renderChangelog();
+      renderAnswerLog();
 
       els.finishExamBtn.style.display = (state.mode === "exam" && state.sessionStarted && !state.sessionFinished) ? "inline-flex" : "none";
     }
@@ -1985,6 +2142,17 @@
         }
       };
       els.resetBtn.onclick = resetProgress;
+      els.toggleRecordsBtn.onclick = () => {
+        state.ui.recordsExpanded = !state.ui.recordsExpanded;
+        saveStore();
+        renderAnswerLog();
+      };
+      els.clearRecordsBtn.onclick = () => {
+        if(!confirm("確定要清除答題紀錄嗎？這不會刪掉收藏與錯題標記。")) return;
+        state.store.answerLog = [];
+        saveStore();
+        renderAll();
+      };
     }
 
     function bindKeyboard(){
@@ -2047,7 +2215,24 @@
 
       bindControls();
       bindKeyboard();
-      prepareSession();
+      if(state.queue.length){
+        if(state.mode === "exam" && state.sessionStarted && !state.sessionFinished && state.timerSeconds > 0){
+          els.timerCard.style.display = "block";
+          els.timerText.textContent = formatTime(state.timerSeconds);
+          state.timerId = setInterval(() => {
+            state.timerSeconds--;
+            els.timerText.textContent = formatTime(Math.max(0, state.timerSeconds));
+            saveStore();
+            if(state.timerSeconds <= 0){
+              stopTimer();
+              finishSession(true);
+            }
+          }, 1000);
+        }
+        renderAll();
+      }else{
+        prepareSession();
+      }
     }
 
     init();
